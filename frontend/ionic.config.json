@@ -1,7 +1,0 @@
-{
-  "name": "ProjectMana",
-  "integrations": {
-    "capacitor": {}
-  },
-  "type": "angular"
-}

@@ -1,0 +1,13 @@
+<div>
+	<input type="text" id="search" placeholder="Recherchez une chanson" >
+	<button (click)="search()">Rechercher</button>
+</div>
+
+<div *ngIf="searchResults">
+	<h2>Résultats de la recherche</h2>
+	<ul>
+		<li *ngFor="let result of searchResults">
+			<p>{{ result?.name }} by {{ result?.artists[0].name }}</p>
+		</li>
+	</ul>
+</div>
