@@ -2,7 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 
 
-namespace PulsePlay;
+namespace ProjectMana;
 
 public class UserRepository : Repository<User>
 {
@@ -19,16 +19,6 @@ public class UserRepository : Repository<User>
         string jsonString = JsonSerializer.Serialize(Data);
         File.WriteAllText(fileName, jsonString);
     }
-    
-    /// <summary>
-    /// Get a new id for a user
-    /// </summary>
-    /// <returns>
-    /// A new id
-    /// </returns>
-    public uint GetNewId() =>
-        Data.Aggregate((uint)0, (max, p) => p.id > max ? p.id : max) + 1;
-
 
     /// <summary>
     /// Get all users
@@ -36,35 +26,32 @@ public class UserRepository : Repository<User>
     /// <returns>
     /// All users
     /// </returns>
-    public async Task<List<User>> GetUsers()
+    public async Task<IEnumerable<User>> GetUsers()
     {
-        return await Task.Run(() => Data);
+        return await Task.Run(() => Data.Values);
     }
 
     /// <summary>
-    /// Get a user by id
+    /// Get all users
     /// </summary>
-    /// <param name="id">The id of the user</param>
     /// <returns>
-    /// The user with the given id
+    /// All users
     /// </returns>
     public async Task<User?> GetUserById(uint id)
     {
-        return await Task.Run(() => Data.FirstOrDefault(u => u.id == id));
+        return await Task.Run(() => Data.Values.FirstOrDefault(u => u.Id == id));
     }
 
     /// <summary>
-    /// Get a user by email and password
+    /// Get a user by username and password
     /// </summary>
-    /// <param name="email">The email of the user</param>
+    /// <param name="username">The username of the user</param>
     /// <param name="password">The password of the user</param>
     /// <returns>
-    /// The user with the given email and password
+    /// The user with the given username and password
     /// </returns>
-    public async Task<User?> GetUserByEmailAndPassword(string email, string password)
-    {
-        return await Task.Run(() => Data.FirstOrDefault(u => u.email == email && u.password == password));
-    }
+    public async Task<User?> GetUserByUsernameAndPassword(string username, string password) =>
+        await Task.Run(() => Data.Values.FirstOrDefault(u => u.Username == username && u.Password == password));
 
     /// <summary>
     /// Verify a user
@@ -74,7 +61,7 @@ public class UserRepository : Repository<User>
     /// Whether the user is valid
     /// </returns>
     public bool VerifyUser(User user) =>
-        Data.Any(u => u.email == user.email && u.password == user.password);
+        Data.Values.Any(u => u.Username == user.Username && u.Password == user.Password);
 
     /// <summary>
     /// Get a user by id
@@ -86,22 +73,19 @@ public class UserRepository : Repository<User>
     /// <returns>
     /// The user with the given id
     /// </returns>
-    public async Task<User?> PostUser(User user)
-    {
-        return await Task.Run(() =>
+    public async Task<User?> PostUser(User user) =>
+		await Task.Run(() =>
         {
-            if (Data.Any(u => u.email == user.email))
+            if (Data.Values.Any(u => u.Username == user.Username))
             {
                 return null;
             }
 
-            user.id = GetNewId();
-            Data.Add(user);
+            user.Id = GetNewId();
+            Data.Values.Add(user);
             
-            // SaveChanges();
             return user;
         });
-    }
 
     /// <summary>
     /// Get a user by id
@@ -120,18 +104,18 @@ public class UserRepository : Repository<User>
 
         return await Task.Run(() =>
         {
-            User? oldUser = Data.FirstOrDefault(u => u.id == id);
+            User? oldUser = Data.Values.FirstOrDefault(u => u.Id == id);
 
             if (oldUser is not null)
             {
                 // replace if new data was provided
-                string? newEmail = user.email ?? oldUser.email;
-                string? newPassword = user.password ?? oldUser.password;
+                string? newUsername = user.Username ?? oldUser.Username;
+                string? newPassword = user.Password ?? oldUser.Password;
 
-                oldUser = Data[Data.IndexOf(oldUser)] = oldUser with
+                oldUser = Data.Values[Data.Values.IndexOf(oldUser)] = oldUser with
                 {
-                    email = newEmail,
-                    password = newPassword,
+                    Username = newUsername,
+                    Password = newPassword,
                 };
             }
 
@@ -153,14 +137,13 @@ public class UserRepository : Repository<User>
     {
         return await Task.Run(() =>
         {
-            User? user = Data.FirstOrDefault(u => u.id == id);
+            User? user = Data.Values.FirstOrDefault(u => u.Id == id);
             if (user is not null)
             {
-                Data.Remove(user);
+                Data.Values.Remove(user);
             }
 
             return user;
         });
     }
-
 }

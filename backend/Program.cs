@@ -2,7 +2,7 @@ using System.Net;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace PulsePlay;
+namespace ProjectMana;
 public class Program
 {
     public static void Main(string[] args)

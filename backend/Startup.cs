@@ -5,7 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
-namespace PulsePlay;
+namespace ProjectMana;
+
 public class Startup
 {
     public Startup(IConfiguration configuration)
@@ -17,6 +18,7 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddSingleton<ProductRepository>();
         services.AddSingleton<UserRepository>();
         services.AddControllers();
     }
@@ -35,14 +37,13 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
-        // app.UseStaticFiles();
-        app.UseStaticFiles(
-            new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider( Path.Combine(Directory.GetCurrentDirectory(), "Resources") ),
-                RequestPath = "/Resources"
-            }
-        );
+        // app.UseStaticFiles(
+        //     new StaticFileOptions
+        //     {
+        //         FileProvider = new PhysicalFileProvider( Path.Combine(Directory.GetCurrentDirectory(), "Resources") ),
+        //         RequestPath = "/Resources"
+        //     }
+        // );
 
 
         app.UseRouting();

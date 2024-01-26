@@ -1,30 +1,42 @@
 using System.Text.Json;
 
-namespace PulsePlay;
+namespace ProjectMana;
 
-public abstract class Repository<T> where T : class {
-
-
-    protected readonly List<T> Data = new();
+public abstract class Repository<T> where T : class
+{
+	protected RepoData Data = new();
 
     public Repository(string fileName)
     {
-        using var file = File.Open(fileName, FileMode.OpenOrCreate);
+        using FileStream? file = File.Open(fileName, FileMode.OpenOrCreate);
 
-        if (file.Length > 0)
-        {
-            Span<byte> buffer = new byte[file.Length];
-            file.Read(buffer);
-
-            Data = JsonSerializer.Deserialize<List<T>>(buffer) ?? new();
-        }
-        else
+        if (file.Length == 0)
         {
             Data = new();
+			return;
         }
+
+		Span<byte> buffer = new byte[file.Length];
+		file.Read(buffer);
+
+		Data = JsonSerializer.Deserialize<RepoData>(buffer) ?? new();
     }
+
+    /// <summary>
+    /// Get a new id for a product
+    /// </summary>
+    /// <returns>
+    /// A new id
+    /// </returns>
+    public uint GetNewId() => Data.CurrentId++;
 
 
     public abstract void SaveChanges();
+
+	public sealed record RepoData
+	{
+		public readonly List<T> Values = [];
+		public uint CurrentId = 1;
+	}
 
 }

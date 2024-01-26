@@ -2,26 +2,22 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 
 
-namespace PulsePlay;
+namespace ProjectMana;
 
 [ApiController]
 [Route("api/users")]
-public class UserController : Controller<UserRepository, User>
+public class UserController(UserRepository repository) : Controller<UserRepository, User>(repository)
 {
 
-    public UserController(UserRepository repository) : base(repository) {}
-
-    /// <summary>
-    /// Get all users
-    /// </summary>
-    /// <returns>
-    /// All users
-    /// </returns>
-    [HttpGet]
-    public async Task<ActionResult<List<User>>> GetAll()
-    {
-        return await repository.GetUsers();
-    }
+	/// <summary>
+	/// Get all users
+	/// </summary>
+	/// <returns>
+	/// All users
+	/// </returns>
+	[HttpGet]
+    public async Task<ActionResult<IEnumerable<User>>> GetAll() => 
+		Ok(await repository.GetUsers());
 
     /// <summary>
     /// Get a user by id
@@ -31,52 +27,50 @@ public class UserController : Controller<UserRepository, User>
     /// The user with the given id
     /// </returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<User>> GetById(uint id)
-    {
-        return await repository.GetUserById(id) switch
+    public async Task<ActionResult<User>> GetById(uint id) =>
+		await repository.GetUserById(id) switch
         {
-            null => NotFound(),
             User user => Ok(user),
+            null => NotFound(),
         };
-    }
 
     /// <summary>
     /// Authenticate a user
     /// </summary>
-    /// <param name="email">The email of the user</param>
+    /// <param name="username">The username of the user</param>
     /// <param name="password">The password of the user</param>
     /// <returns>
     /// The JWT token of the user,
     ///     or NotFound if the user does not exist,
-    ///     or BadRequest if the email/password is incorrect
+    ///     or BadRequest if the username/password is incorrect
     /// </returns>
-    [HttpPost("login")]
-    public async Task<ActionResult> AuthenticateUser([FromForm]string email, [FromForm]string password)
-    {
-        return await repository.GetUserByEmailAndPassword(email, JWT.HashPassword(password)) switch
+    [HttpPost("auth")]
+    public async Task<ActionResult> AuthenticateUser([FromForm]string username, [FromForm]string password) =>
+		await repository.GetUserByUsernameAndPassword(username, password) switch
         {
-            null => NotFound(),
             User user => Ok(JsonSerializer.Serialize(JWT.Generate(user).ToString())),
+            null => NotFound(),
         };
-    }
 
     /// <summary>
     /// Register a user
     /// </summary>
-    /// <param name="email">The email of the user</param>
+    /// <param name="username">The username of the user</param>
     /// <param name="password">The password of the user</param>
     /// <returns>
     /// The user,
     ///    or BadRequest if the user already exists
     /// </returns>
-    [HttpPost("register")]
-    public async Task<ActionResult<User>> RegisterUser([FromForm]string email, [FromForm]string password)
+    [HttpPut]
+    public async Task<ActionResult<User>> RegisterUser([FromForm]string username, [FromForm]string password)
     {
-        User? result = await repository.PostUser( new()
-        {
-            email = email,
-            password = JWT.HashPassword(password)
-        });
+        User? result = await repository.PostUser( 
+			new()
+			{
+				Username = username,
+				Password = password
+			}
+		);
 
         if (result is null)
         {
@@ -103,11 +97,7 @@ public class UserController : Controller<UserRepository, User>
             return BadRequest();
         }
 
-        User? result = await repository.PutUserById(id, user with
-        {
-            password = JWT.HashPassword(user.password ?? "")
-        });
-        if (result is null)
+        if (await repository.PutUserById(id, user) is not User result)
         {
             return NotFound();
         }
@@ -126,8 +116,7 @@ public class UserController : Controller<UserRepository, User>
     [HttpDelete("{id}")]
     public async Task<ActionResult<User>> DeleteUser(uint id)
     {
-        User? result = await repository.DeleteUserById(id);
-        if (result is null)
+        if (await repository.DeleteUserById(id) is not User result)
         {
             return NotFound();
         }
@@ -135,6 +124,4 @@ public class UserController : Controller<UserRepository, User>
         repository.SaveChanges();
         return Ok(result);
     }
-    
-    
 }

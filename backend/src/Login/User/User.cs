@@ -1,8 +1,14 @@
-namespace PulsePlay;
+namespace ProjectMana;
 
 public record User
 {
-    public uint id { get; set; }
-    public string? email { get; set; }
-    public string? password { get; set; }
+    public uint Id { get; set; } = 1;
+    public string? Username { get; set; } = null;
+    public string? Password { get; set; } = null;
+    public Authorizations Auth { get; set; } = Authorizations.User;
+
+	public enum Authorizations : byte
+	{
+		User = 0
+	}
 }

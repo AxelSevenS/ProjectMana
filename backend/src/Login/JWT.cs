@@ -2,23 +2,29 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
-namespace PulsePlay;
+namespace ProjectMana;
 
-public record JWT {
+public record JWT
+{
 
     public static readonly string Secret = "Nawmn47obf1NiJD/+/BNDKD55iOY8ct695aa8J1smZgADdLurcGnSoWhbEjejG0tWvgtGCyJpyebTwI6EA1u8A==";
 
+	public const uint durationDays = 1;
 
-    public string header { get; set; }
-    public string payload { get; set; }
-    public string signature { get; set; }
+
+    public string Header { get; set; }
+    public string Payload { get; set; }
+    public string Signature { get; set; }
+
+    private JWTHeader? decodedHeader = null;
+    private JWTPayload? decodedPayload = null;
 
 
     public JWT(string header, string payload, string signature)
     {
-        this.header = header;
-        this.payload = payload;
-        this.signature = signature;
+        Header = header;
+        Payload = payload;
+        Signature = signature;
     }
 
 
@@ -51,23 +57,20 @@ public record JWT {
     }
 
 
-    public JWTHeader GetDecodedHeader() => 
-        JsonSerializer.Deserialize<JWTHeader>(Base64UrlDecode(header)) ?? throw new Exception("Invalid JWT header");
+    public JWTHeader GetDecodedHeader() =>
+		decodedHeader ??=
+        JsonSerializer.Deserialize<JWTHeader>(Base64UrlDecode(Header)) ?? throw new Exception("Invalid JWT header");
 
     public JWTPayload GetDecodedPayload() => 
-        JsonSerializer.Deserialize<JWTPayload>(Base64UrlDecode(payload)) ?? throw new Exception("Invalid JWT payload");
+		decodedPayload ??=
+        JsonSerializer.Deserialize<JWTPayload>(Base64UrlDecode(Payload)) ?? throw new Exception("Invalid JWT payload");
 
     public string GetDecodedSignature() => 
-        Base64UrlDecode(signature);
+        Base64UrlDecode(Signature);
 
 
-    public static JWT? Parse(string? jwt)
+    public static JWT? Parse(string jwt)
     {
-        if (jwt is null)
-        {
-            return null;
-        }
-
         string[] parts = jwt.Split('.');
         if (parts.Length != 3)
         {
@@ -84,24 +87,22 @@ public record JWT {
             return false;
         }
 
-        return Base64UrlEncode(GenerateSignature()) == signature;
+		string generatedSignature = Base64UrlEncode(GenerateSignature());
+        return generatedSignature == Signature;
     }
 
     public static JWT Generate(User user)
     {
         uint iat = (uint)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        uint exp = (uint)DateTimeOffset.UtcNow.AddDays(7).ToUnixTimeSeconds();
+        uint exp = (uint)DateTimeOffset.UtcNow.AddDays(durationDays).ToUnixTimeSeconds();
 
         string header = Base64UrlEncode(JsonSerializer.Serialize(new JWTHeader()));
         string payload = Base64UrlEncode(JsonSerializer.Serialize(new JWTPayload()
-            {
-                id = user.id,
-                email = user.email,
-                password = user.password,
-                iat = iat,
-                exp = exp,
-            })
-        );
+        {
+			user = user,
+            iat = iat,
+            exp = exp,
+        }));
         string signature = Base64UrlEncode( GenerateSignature(header, payload) );
 
         return new JWT(header, payload, signature);
@@ -115,34 +116,35 @@ public record JWT {
         return Base64UrlDecode(Convert.ToBase64String(signatureBytes));
     }
 
-    public static string HashPassword(string password)
-    {
-        byte[] secretBytes = Encoding.UTF8.GetBytes(Secret);
-        using HMACSHA256? hmac = new(secretBytes);
-        byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
-        byte[] passwordHash = hmac.ComputeHash(passwordBytes);
-        return Convert.ToBase64String(passwordHash);
-    }
+    // public static string HashPassword(string password)
+    // {
+    //     byte[] secretBytes = Encoding.UTF8.GetBytes(Secret);
+    //     using var hmac = new HMACSHA256(secretBytes);
+    //     byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+    //     byte[] passwordHash = hmac.ComputeHash(passwordBytes);
+    //     return Convert.ToBase64String(passwordHash);
+    // }
 
     public string GenerateSignature() =>
-        GenerateSignature(header, payload);
+        GenerateSignature(Header, Payload);
 
     public override string ToString() =>
-        header + "." + payload + "." + signature;
+        Header + "." + Payload + "." + Signature;
 
 
 
     public record class JWTHeader
     {
-        public string alg { get; set; } = "HS256";
         public string typ { get; set; } = "JWT";
     }
 
     public record class JWTPayload
     {
-        public uint id { get; set; } = 1;
-        public string? email { get; set; } = null;
-        public string? password { get; set; } = null;
+        // public uint id { get; set; } = 1;
+        // public string? username { get; set; } = null;
+        // public string? password { get; set; } = null;
+		// public bool admin { get; set; } = false;
+		public User user { get; set; } = new();
         public uint iat { get; set; } = 0;
         public uint exp { get; set; } = 0;
     }
