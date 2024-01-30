@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+  db:
+    container_name: db
+    image: postgres:12
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432"
+
+  backend:
+    container_name: backend
+    depends_on:
+      - db
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=db; Database=postgres; User Id=postgres; Password=postgres"
+    ports:
+      - "5000:5000"
+      
+  frontend:
+    container_name: frontend
+    depends_on:
+      - backend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+
+volumes:
+  pgdata: {}
