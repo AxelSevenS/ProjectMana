@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 
 namespace ProjectMana;
@@ -7,9 +8,14 @@ public class Program
 {
     public static void Main(string[] args)
     {
+		IHost host = CreateHostBuilder(args).Build();
 
-        // ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
-        CreateHostBuilder(args).Build().Run();
+		using ( IServiceScope scope = host.Services.CreateScope() )
+		{
+			scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
+		}
+
+        host.Run();
     }
 
     public static IHostBuilder CreateHostBuilder(string[] args) {
@@ -17,7 +23,6 @@ public class Program
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 webBuilder.UseStartup<Startup>();
-                // webBuilder.UseUrls("https://localhost:5001");
             });
     }
 }

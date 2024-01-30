@@ -1,14 +1,14 @@
-using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 
 namespace ProjectMana;
 
 [ApiController]
 [Route("api/users")]
-public class UserController(UserRepository repository) : Controller<UserRepository, User>(repository)
+public class UserController(AppDbContext repo) : Controller<User>(repo)
 {
-
 	/// <summary>
 	/// Get all users
 	/// </summary>
@@ -16,8 +16,8 @@ public class UserController(UserRepository repository) : Controller<UserReposito
 	/// All users
 	/// </returns>
 	[HttpGet]
-    public async Task<ActionResult<IEnumerable<User>>> GetAll() => 
-		Ok(await repository.GetUsers());
+    public async Task<List<User>> GetAll() =>
+		await repository.Users.ToListAsync();
 
     /// <summary>
     /// Get a user by id
@@ -28,7 +28,7 @@ public class UserController(UserRepository repository) : Controller<UserReposito
     /// </returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<User>> GetById(uint id) =>
-		await repository.GetUserById(id) switch
+		await repository.Users.FindAsync(id) switch
         {
             User user => Ok(user),
             null => NotFound(),
@@ -41,16 +41,19 @@ public class UserController(UserRepository repository) : Controller<UserReposito
     /// <param name="password">The password of the user</param>
     /// <returns>
     /// The JWT token of the user,
-    ///     or NotFound if the user does not exist,
-    ///     or BadRequest if the username/password is incorrect
+    ///     or NotFound if the user does not exist
     /// </returns>
     [HttpPost("auth")]
-    public async Task<ActionResult> AuthenticateUser([FromForm]string username, [FromForm]string password) =>
-		await repository.GetUserByUsernameAndPassword(username, password) switch
+    public async Task<ActionResult> AuthenticateUser([FromForm]string username, [FromForm]string password)
+	{
+		password = JWT.HashPassword(password);
+		Console.WriteLine($"{username} - {password}");
+		return await repository.Users.FirstOrDefaultAsync(u => u.Username == username && u.Password == password) switch
         {
-            User user => Ok(JsonSerializer.Serialize(JWT.Generate(user).ToString())),
+            User user => Ok( JWT.Generate(user).ToString() ),
             null => NotFound(),
         };
+	}
 
     /// <summary>
     /// Register a user
@@ -62,13 +65,13 @@ public class UserController(UserRepository repository) : Controller<UserReposito
     ///    or BadRequest if the user already exists
     /// </returns>
     [HttpPut]
-    public async Task<ActionResult<User>> RegisterUser([FromForm]string username, [FromForm]string password)
+    public ActionResult<User> RegisterUser([FromForm]string username, [FromForm]string password)
     {
-        User? result = await repository.PostUser( 
+        EntityEntry<User>? result = repository.Users.Add( 
 			new()
 			{
 				Username = username,
-				Password = password
+				Password = JWT.HashPassword(password)
 			}
 		);
 
@@ -92,18 +95,23 @@ public class UserController(UserRepository repository) : Controller<UserReposito
     [HttpPut("{id}")]
     public async Task<ActionResult<User>> UpdateUser(uint id, [FromForm] User user)
     {
+		// TODO: Add Auth check
+		
         if (user is null)
         {
             return BadRequest();
         }
 
-        if (await repository.PutUserById(id, user) is not User result)
+		User? current = await repository.Users.FindAsync(id);
+        if ( current is null )
         {
             return NotFound();
         }
 
+		EntityEntry<User>? updated = repository.Users.Update( current.WithUpdatesFrom(user) );
+
         repository.SaveChanges();
-        return Ok(result);
+        return Ok(updated);
     }
 
     /// <summary>
@@ -116,12 +124,17 @@ public class UserController(UserRepository repository) : Controller<UserReposito
     [HttpDelete("{id}")]
     public async Task<ActionResult<User>> DeleteUser(uint id)
     {
-        if (await repository.DeleteUserById(id) is not User result)
+		// TODO: Add Auth check
+
+		User? current = await repository.Users.FindAsync(id);
+        if ( current is null )
         {
             return NotFound();
         }
 
+        EntityEntry<User> deleted = repository.Users.Remove(current);
+
         repository.SaveChanges();
-        return Ok(result);
+        return Ok(deleted);
     }
 }

@@ -1,26 +1,20 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
 
 namespace ProjectMana;
 
-public class Startup
+public class Startup(IConfiguration configuration)
 {
-    public Startup(IConfiguration configuration)
-    {
-        Configuration = configuration;
-    }
+	public IConfiguration Configuration { get; } = configuration;
 
-    public IConfiguration Configuration { get; }
-
-    public void ConfigureServices(IServiceCollection services)
+	public void ConfigureServices(IServiceCollection services)
     {
-        services.AddSingleton<ProductRepository>();
-        services.AddSingleton<UserRepository>();
         services.AddControllers();
+		services.AddDbContext<AppDbContext>(
+			opt => 
+			{
+				opt.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"));
+			}
+		);
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

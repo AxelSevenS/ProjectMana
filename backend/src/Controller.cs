@@ -1,15 +1,16 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 
 namespace ProjectMana;
 
-public abstract class Controller<T, TData>(T repository) : ControllerBase where T : Repository<TData> where TData : class
+public abstract class Controller<TData>(AppDbContext repository) : ControllerBase where TData : class
 {
-    protected readonly T repository = repository;
+    protected readonly AppDbContext repository = repository;
 
 	public static bool IsAuthValid(HttpRequest request, out JWT token)
 	{
-        var authorization = request.Headers.Authorization;
+        StringValues authorization = request.Headers.Authorization;
         string? accessToken = authorization.FirstOrDefault(a => a is not null && a.StartsWith("Bearer "));
 
 		if (accessToken is null) 

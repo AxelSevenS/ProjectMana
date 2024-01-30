@@ -21,7 +21,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     environment:
-      ConnectionStrings__DefaultConnection: "Server=db; Database=postgres; User Id=postgres; Password=postgres"
+      ConnectionStrings__DefaultConnection: "Server=db; Database=postgres; User Id=postgres; Password=postgres;"
     ports:
       - "5000:5000"
       

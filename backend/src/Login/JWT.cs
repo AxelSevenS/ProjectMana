@@ -1,13 +1,14 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace ProjectMana;
 
 public record JWT
 {
 
-    public static readonly string Secret = "Nawmn47obf1NiJD/+/BNDKD55iOY8ct695aa8J1smZgADdLurcGnSoWhbEjejG0tWvgtGCyJpyebTwI6EA1u8A==";
+    public static readonly string Secret = "Nawmn47obf1NiJD/+/BNDKD55iOY8ct695aa8J1smZgADdLurcGnSoWhbEjejG0tWvgtGCyJpyebTwI6EA1u8A=="; // TODO: Add to environment secrets
 
 	public const uint durationDays = 1;
 
@@ -58,12 +59,12 @@ public record JWT
 
 
     public JWTHeader GetDecodedHeader() =>
-		decodedHeader ??=
-        JsonSerializer.Deserialize<JWTHeader>(Base64UrlDecode(Header)) ?? throw new Exception("Invalid JWT header");
+		decodedHeader ??= JsonSerializer.Deserialize<JWTHeader>(Base64UrlDecode(Header)) ??
+		throw new Exception("Invalid JWT header");
 
     public JWTPayload GetDecodedPayload() => 
-		decodedPayload ??=
-        JsonSerializer.Deserialize<JWTPayload>(Base64UrlDecode(Payload)) ?? throw new Exception("Invalid JWT payload");
+		decodedPayload ??= JsonSerializer.Deserialize<JWTPayload>(Base64UrlDecode(Payload)) ??
+		throw new Exception("Invalid JWT payload");
 
     public string GetDecodedSignature() => 
         Base64UrlDecode(Signature);
@@ -82,7 +83,7 @@ public record JWT
 
     public bool Verify()
     {
-        if (GetDecodedPayload().exp < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+        if (GetDecodedPayload().Expires < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
         {
             return false;
         }
@@ -99,9 +100,9 @@ public record JWT
         string header = Base64UrlEncode(JsonSerializer.Serialize(new JWTHeader()));
         string payload = Base64UrlEncode(JsonSerializer.Serialize(new JWTPayload()
         {
-			user = user,
-            iat = iat,
-            exp = exp,
+			User = user,
+            IssuedAt = iat,
+            Expires = exp,
         }));
         string signature = Base64UrlEncode( GenerateSignature(header, payload) );
 
@@ -110,43 +111,47 @@ public record JWT
 
     private static string GenerateSignature(string header, string payload)
     {
-        byte[] secretBytes = Encoding.UTF8.GetBytes(Secret);
-        using HMACSHA256? hmac = new(secretBytes);
-        byte[] signatureBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(header + "." + payload));
+        Span<byte> secretBytes = Encoding.UTF8.GetBytes(Secret);
+        using HMACSHA256? hmac = new(secretBytes.ToArray());
+
+        Span<byte> signatureBytes = hmac.ComputeHash(Encoding.UTF8.GetBytes(header + "." + payload));
         return Base64UrlDecode(Convert.ToBase64String(signatureBytes));
     }
 
-    // public static string HashPassword(string password)
-    // {
-    //     byte[] secretBytes = Encoding.UTF8.GetBytes(Secret);
-    //     using var hmac = new HMACSHA256(secretBytes);
-    //     byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
-    //     byte[] passwordHash = hmac.ComputeHash(passwordBytes);
-    //     return Convert.ToBase64String(passwordHash);
-    // }
+    public static string HashPassword(string password)
+    {
+        Span<byte> secretBytes = Encoding.UTF8.GetBytes(Secret);
+        using HMACSHA256 hmac = new(secretBytes.ToArray());
+
+        Span<byte> passwordBytes = Encoding.UTF8.GetBytes(password);
+        Span<byte> passwordHash = hmac.ComputeHash(passwordBytes.ToArray());
+        return Convert.ToBase64String(passwordHash);
+    }
 
     public string GenerateSignature() =>
         GenerateSignature(Header, Payload);
 
     public override string ToString() =>
-        Header + "." + Payload + "." + Signature;
+        JsonSerializer.Serialize(Header + "." + Payload + "." + Signature);
 
 
 
     public record class JWTHeader
     {
-        public string typ { get; set; } = "JWT";
+		[JsonPropertyName("typ")]
+        public string Type { get; set; } = "JWT";
     }
 
     public record class JWTPayload
     {
-        // public uint id { get; set; } = 1;
-        // public string? username { get; set; } = null;
-        // public string? password { get; set; } = null;
-		// public bool admin { get; set; } = false;
-		public User user { get; set; } = new();
-        public uint iat { get; set; } = 0;
-        public uint exp { get; set; } = 0;
+		[JsonPropertyName("user")]
+		public User User { get; set; } = new();
+
+		[JsonPropertyName("iat")]
+        public uint IssuedAt { get; set; } = 0;
+
+		[JsonPropertyName("exp")]
+        public uint Expires { get; set; } = 0;
     }
 
     
