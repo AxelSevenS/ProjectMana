@@ -11,7 +11,7 @@ using ProjectMana;
 namespace ProjectMana.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240130185545_SeedAdminUser")]
+    [Migration("20240131190308_SeedAdminUser")]
     partial class SeedAdminUser
     {
         /// <inheritdoc />
@@ -23,6 +23,52 @@ namespace ProjectMana.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("ProjectMana.Song", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id")
+                        .HasAnnotation("Relational:JsonPropertyName", "id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("AuthorId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("author_id")
+                        .HasAnnotation("Relational:JsonPropertyName", "author-id");
+
+                    b.Property<byte[]>("FileBytes")
+                        .IsRequired()
+                        .HasColumnType("bytea")
+                        .HasColumnName("file_bytes")
+                        .HasAnnotation("Relational:JsonPropertyName", "file-bytes");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("file_name")
+                        .HasAnnotation("Relational:JsonPropertyName", "file-name");
+
+                    b.Property<string>("MimeType")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("mime")
+                        .HasAnnotation("Relational:JsonPropertyName", "mime");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name")
+                        .HasAnnotation("Relational:JsonPropertyName", "name");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.ToTable("songs");
+                });
 
             modelBuilder.Entity("ProjectMana.User", b =>
                 {
@@ -63,6 +109,17 @@ namespace ProjectMana.Migrations
                             Password = "dwP1b9msbudlppw8n4tZRyXOHfiflr1w9TGpJLkGGn8=",
                             Username = "AdminUser"
                         });
+                });
+
+            modelBuilder.Entity("ProjectMana.Song", b =>
+                {
+                    b.HasOne("ProjectMana.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
                 });
 #pragma warning restore 612, 618
         }

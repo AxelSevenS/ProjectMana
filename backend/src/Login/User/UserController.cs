@@ -75,13 +75,13 @@ public class UserController(AppDbContext repo) : Controller<User>(repo)
 			}
 		);
 
-        if (result is null)
+        if (result.Entity is not User user)
         {
             return BadRequest();
         }
 
         repository.SaveChanges();
-        return Ok(result);
+        return Ok(user);
     }
 
     /// <summary>
@@ -111,7 +111,7 @@ public class UserController(AppDbContext repo) : Controller<User>(repo)
 		EntityEntry<User>? updated = repository.Users.Update( current.WithUpdatesFrom(user) );
 
         repository.SaveChanges();
-        return Ok(updated);
+        return Ok(updated.Entity);
     }
 
     /// <summary>
@@ -135,6 +135,6 @@ public class UserController(AppDbContext repo) : Controller<User>(repo)
         EntityEntry<User> deleted = repository.Users.Remove(current);
 
         repository.SaveChanges();
-        return Ok(deleted);
+        return Ok(deleted.Entity);
     }
 }

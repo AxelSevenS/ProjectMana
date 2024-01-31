@@ -8,8 +8,9 @@ namespace ProjectMana;
 public record User
 {
 	[Key] [Column("id")]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	[JsonPropertyName("id")]
-    public uint Id { get; set; } = 1;
+    public uint Id { get; set; }
 
 	[Required] [Column("username")]
 	[JsonPropertyName("username")]
@@ -34,10 +35,12 @@ public record User
 	public enum Authorizations : byte
 	{
 		User = 0,
-		Editor = User,
-		Admin = RemoveUsers | EditUserAuths,
+		Editor = CreateSongs | EditSongs,
+		Admin = Editor | RemoveUsers | EditUserAuths,
 
-		RemoveUsers = 1 << 0,   // 0b0000_0001
-		EditUserAuths = 1 << 1, // 0b0000_0010
+		RemoveUsers = 1 << 0,    // 0b0000_0001
+		EditUserAuths = 1 << 1,  // 0b0000_0010
+		CreateSongs = 1 << 2,    // 0b0000_0100
+		EditSongs = 1 << 3,      // 0b0000_1000
 	}
 }
