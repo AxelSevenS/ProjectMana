@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -7,7 +8,7 @@ namespace ProjectMana;
 
 [ApiController]
 [Route("api/users")]
-public class UserController(AppDbContext repo) : Controller<User>(repo)
+public class UserController(AppDbContext repo, JwtOptions jwtOptions) : Controller<User>(repo)
 {
 	/// <summary>
 	/// Get all users
@@ -46,11 +47,10 @@ public class UserController(AppDbContext repo) : Controller<User>(repo)
     [HttpPost("auth")]
     public async Task<ActionResult> AuthenticateUser([FromForm]string username, [FromForm]string password)
 	{
-		password = JWT.HashPassword(password);
-		Console.WriteLine($"{username} - {password}");
+		password = jwtOptions.HashPassword(password);
 		return await repository.Users.FirstOrDefaultAsync(u => u.Username == username && u.Password == password) switch
         {
-            User user => Ok( JWT.Generate(user).ToString() ),
+            User user => Ok( jwtOptions.GenerateFrom(user).Write() ),
             null => NotFound(),
         };
 	}
@@ -71,7 +71,7 @@ public class UserController(AppDbContext repo) : Controller<User>(repo)
 			new()
 			{
 				Username = username,
-				Password = JWT.HashPassword(password)
+				Password = jwtOptions.HashPassword(password)
 			}
 		);
 
@@ -93,9 +93,16 @@ public class UserController(AppDbContext repo) : Controller<User>(repo)
     /// The updated user
     /// </returns>
     [HttpPut("{id}")]
+	[Authorize]
     public async Task<ActionResult<User>> UpdateUser(uint id, [FromForm] User user)
     {
-		// TODO: Add Auth check
+		if (
+			! VerifyAuthenticatedId(id) && 
+			! VerifyAuthorization(ProjectMana.User.Authorizations.EditAnyUser)
+		)
+		{
+			return NotFound(); // 404 to avoid giving too much information.
+		}
 		
         if (user is null)
         {
@@ -122,9 +129,16 @@ public class UserController(AppDbContext repo) : Controller<User>(repo)
     /// The deleted user
     /// </returns>
     [HttpDelete("{id}")]
+	[Authorize]
     public async Task<ActionResult<User>> DeleteUser(uint id)
     {
-		// TODO: Add Auth check
+		if ( 
+			! VerifyAuthenticatedId(id) &&
+			! VerifyAuthorization(ProjectMana.User.Authorizations.DeleteAnyUser)
+		)
+		{
+			return NotFound(); // 404 to avoid giving too much information.
+		}
 
 		User? current = await repository.Users.FindAsync(id);
         if ( current is null )

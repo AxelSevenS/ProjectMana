@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -20,40 +21,41 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 		await repository.Songs.ToListAsync();
 
     /// <summary>
-    /// Get a user by id
+    /// Get a song by id
     /// </summary>
-    /// <param name="id">The id of the user</param>
+    /// <param name="id">The id of the song</param>
     /// <returns>
-    /// The user with the given id
+    /// The song with the given id
     /// </returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<Song>> GetById(uint id) =>
 		await repository.Songs.FindAsync(id) switch
         {
-            Song user => Ok(user),
+            Song song => Ok(song),
             null => NotFound(),
         };
 
     /// <summary>
-    /// Register a user
+    /// Register a song
     /// </summary>
-    /// <param name="username">The username of the user</param>
-    /// <param name="password">The password of the user</param>
+    /// <param name="songname">The songname of the song</param>
+    /// <param name="password">The password of the song</param>
     /// <returns>
-    /// The user,
-    ///    or BadRequest if the user already exists
+    /// The song,
+    ///    or BadRequest if the song already exists
     /// </returns>
     [HttpPut]
+	[Authorize]
     public async Task<ActionResult<Song>> AddSong([FromForm]string name, [FromForm]IFormFile file)
     {
-
-		// TODO: Get Auth here
-		User.Authorizations auth = ProjectMana.User.Authorizations.Admin;
-		if ( (auth & ProjectMana.User.Authorizations.CreateSongs) == 0)
+		if (
+			! TryGetAuthenticatedUserId(out uint authorId) ||
+			! VerifyAuthorization(ProjectMana.User.Authorizations.AddSongs)
+		)
 		{
-			return Unauthorized();
+			return NotFound(); // 404 to avoid giving too much information.
 		}
-		uint authorId = 1;
+
 
         if (file.Length == 0)
         {
@@ -76,6 +78,7 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 		}
 
 
+
         EntityEntry<Song> result = repository.Songs.Add(
 			new()
 			{
@@ -91,53 +94,69 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
         return Ok(result.Entity);
     }
 
-    // /// <summary>
-    // /// Update a user
-    // /// </summary>
-    // /// <param name="id">The id of the user</param>
-    // /// <param name="user">The user to update</param>
-    // /// <returns>
-    // /// The updated user
-    // /// </returns>
-    // [HttpPut("{id}")]
-    // public async Task<ActionResult<Song>> UpdateSong(uint id, [FromForm] Song user)
-    // {
-	// 	// TODO: Add Auth check
-		
-    //     if (user is null)
-    //     {
-    //         return BadRequest();
-    //     }
-
-	// 	Song? current = await repository.Songs.FindAsync(id);
-    //     if ( current is null )
-    //     {
-    //         return NotFound();
-    //     }
-
-	// 	EntityEntry<Song>? updated = repository.Songs.Update( current.WithUpdatesFrom(user) );
-
-    //     repository.SaveChanges();
-    //     return Ok(updated);
-    // }
-
     /// <summary>
-    /// Delete a user
+    /// Update a song
     /// </summary>
-    /// <param name="id">The id of the user</param>
+    /// <param name="id">The id of the song</param>
+    /// <param name="song">The song to update</param>
     /// <returns>
-    /// The deleted user
+    /// The updated song
     /// </returns>
-    [HttpDelete("{id}")]
-    public async Task<ActionResult<Song>> DeleteSong(uint id)
+    [HttpPut("{id}")]
+	[Authorize]
+    public async Task<ActionResult<Song>> UpdateSong(uint id, [FromForm] Song song)
     {
-		// TODO: Add Auth check
+        if (song is null)
+        {
+            return BadRequest();
+        }
 
 		Song? current = await repository.Songs.FindAsync(id);
         if ( current is null )
         {
             return NotFound();
         }
+
+		if (
+			! TryGetAuthenticatedUserId(out uint authorId) &&
+			current.AuthorId != authorId &&
+			! VerifyAuthorization(ProjectMana.User.Authorizations.EditAnySong)
+		)
+		{
+			return NotFound(); // 404 to avoid giving too much information.
+		}
+
+		EntityEntry<Song> updated = repository.Songs.Update( current.WithUpdatesFrom(song) );
+
+        repository.SaveChanges();
+        return Ok(updated);
+    }
+
+    /// <summary>
+    /// Delete a song
+    /// </summary>
+    /// <param name="id">The id of the song</param>
+    /// <returns>
+    /// The deleted song
+    /// </returns>
+    [HttpDelete("{id}")]
+	[Authorize]
+    public async Task<ActionResult<Song>> DeleteSong(uint id)
+    {
+		Song? current = await repository.Songs.FindAsync(id);
+        if ( current is null )
+        {
+            return NotFound();
+        }
+
+		if (
+			! TryGetAuthenticatedUserId(out uint authorId) &&
+			current.AuthorId != authorId &&
+			! VerifyAuthorization(ProjectMana.User.Authorizations.DeleteAnySong)
+		)
+		{
+			return NotFound(); // 404 to avoid giving too much information.
+		}
 
         repository.Songs.Remove(current);
 

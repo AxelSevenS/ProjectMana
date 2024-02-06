@@ -1,6 +1,9 @@
-using System.Text.Json;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Primitives;
+
+using UserAuth = ProjectMana.User.Authorizations;
 
 namespace ProjectMana;
 
@@ -8,21 +11,48 @@ public abstract class Controller<TData>(AppDbContext repository) : ControllerBas
 {
     protected readonly AppDbContext repository = repository;
 
-	public static bool IsAuthValid(HttpRequest request, out JWT token)
+	/// <summary>
+	/// Check wether the user is authenticated and if the user holds the given authorizations, <c>authorization</c>
+	/// </summary>
+	/// <param name="authorizations"></param>
+	/// <returns>True if the user is authenticated and holds the authorization(s), False if the user is not authenticated or doesn't hold the authorization(s)</returns>
+	protected bool VerifyAuthorization(UserAuth authorizations)
 	{
-        StringValues authorization = request.Headers.Authorization;
-        string? accessToken = authorization.FirstOrDefault(a => a is not null && a.StartsWith("Bearer "));
-
-		if (accessToken is null) 
+		if (
+			HttpContext.User.FindFirst(ClaimTypes.Role)?.Value is string claim && 
+			Enum.TryParse(claim, out UserAuth auth)
+		)
 		{
-			token = null!;
-			return false;
+			return (auth & authorizations) != 0;
 		}
 
-        accessToken = JsonSerializer.Deserialize<string>(accessToken[7..])!;
-        token = JWT.Parse(accessToken)!;
+		return false;
+	}
 
-        return token is not null && token.Verify();
-    }
+	/// <summary>
+	/// Verifies wether the user is authenticated and if it is, set <c>id</c> to the authenticated user's Id.
+	/// </summary>
+	/// <param name="id"></param>
+	/// <returns></returns>
+	protected bool TryGetAuthenticatedUserId(out uint id)
+	{
+		id = 0;
+		if (
+			HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) is Claim claim && 
+			uint.TryParse(Encoding.UTF8.GetBytes(claim.Value), out id)
+		)
+		{
+			return id != 0;
+		}
 
+		return false;
+	}
+
+	/// <summary>
+	/// Verify if the current authenticated user exists and has the given Id as its own
+	/// </summary>
+	/// <param name="validId"></param>
+	/// <returns>True if the Authenticated user exists and has the given Id, False if the user is not authenticated or doesn't fit the given Id</returns>
+	protected bool VerifyAuthenticatedId(uint validId) =>
+		TryGetAuthenticatedUserId(out uint authenticatedId) && authenticatedId == validId;
 }

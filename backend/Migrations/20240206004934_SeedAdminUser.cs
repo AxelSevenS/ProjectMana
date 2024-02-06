@@ -19,7 +19,7 @@ namespace ProjectMana.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     username = table.Column<string>(type: "text", nullable: false),
                     password = table.Column<string>(type: "text", nullable: false),
-                    authorizations = table.Column<byte>(type: "smallint", nullable: false)
+                    authorizations = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -52,7 +52,7 @@ namespace ProjectMana.Migrations
             migrationBuilder.InsertData(
                 table: "users",
                 columns: new[] { "id", "authorizations", "password", "username" },
-                values: new object[] { 1L, (byte)3, "dwP1b9msbudlppw8n4tZRyXOHfiflr1w9TGpJLkGGn8=", "AdminUser" });
+                values: new object[] { 1L, 63, "MMs9wIImkG8hnTH6C/v7cyaENECVzczmXzuRN8w1pIk=", "AdminUser" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_songs_author_id",

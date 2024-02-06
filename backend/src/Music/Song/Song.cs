@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ProjectMana;
 
@@ -23,24 +24,24 @@ public record Song
 
 	[Required] [Column("name")]
 	[JsonPropertyName("name")]
-    public string? Name { get; set; } = null;
+    public string Name { get; set; } = string.Empty;
 
 
 	[Required] [Column("file_name")]
 	[JsonPropertyName("file-name")]
-    public string? FileName { get; set; } = null;
+    public string FileName { get; set; } = string.Empty;
 
 	[Required] [Column("mime")]
 	[JsonPropertyName("mime")]
-    public string? MimeType { get; set; } = null;
+    public string MimeType { get; set; } = string.Empty;
 
 	[Required] [Column("file_bytes")]
 	[JsonPropertyName("file-bytes")]
-    public byte[]? FileBytes { get; set; } = [];
+    public byte[] FileBytes { get; set; } = [];
 
 
 	public Song WithUpdatesFrom(Song other) {
-		bool isFileWhole = other.FileBytes is not null && other.FileName is not null && other.MimeType is not null;
+		bool isFileWhole = other.FileBytes.IsNullOrEmpty() && other.FileName.IsNullOrEmpty() && other.MimeType.IsNullOrEmpty();
 		return this with
 		{
 			Name = other.Name ?? Name,

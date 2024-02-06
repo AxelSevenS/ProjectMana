@@ -11,7 +11,7 @@ using ProjectMana;
 namespace ProjectMana.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240131190308_SeedAdminUser")]
+    [Migration("20240206004934_SeedAdminUser")]
     partial class SeedAdminUser
     {
         /// <inheritdoc />
@@ -80,8 +80,8 @@ namespace ProjectMana.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<byte>("Auth")
-                        .HasColumnType("smallint")
+                    b.Property<int>("Auth")
+                        .HasColumnType("integer")
                         .HasColumnName("authorizations")
                         .HasAnnotation("Relational:JsonPropertyName", "authorizations");
 
@@ -105,8 +105,8 @@ namespace ProjectMana.Migrations
                         new
                         {
                             Id = 1L,
-                            Auth = (byte)3,
-                            Password = "dwP1b9msbudlppw8n4tZRyXOHfiflr1w9TGpJLkGGn8=",
+                            Auth = 63,
+                            Password = "MMs9wIImkG8hnTH6C/v7cyaENECVzczmXzuRN8w1pIk=",
                             Username = "AdminUser"
                         });
                 });
