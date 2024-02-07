@@ -1,24 +1,68 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
-namespace PulsePlay;
-public class Startup
+namespace ProjectMana;
+
+public class Startup(IConfiguration Configuration)
 {
-    public Startup(IConfiguration configuration)
+	public void ConfigureServices(IServiceCollection services)
     {
-        Configuration = configuration;
-    }
+		JwtOptions jwtOptions = Configuration.GetSection(JwtOptions.Jwt)
+			.Get<JwtOptions>()!;
 
-    public IConfiguration Configuration { get; }
+		services.AddSingleton(jwtOptions);
 
-    public void ConfigureServices(IServiceCollection services)
-    {
-        services.AddSingleton<UserRepository>();
         services.AddControllers();
+		services.AddDbContext<AppDbContext>(
+			opt => 
+			{
+				opt.UseNpgsql(Configuration.GetConnectionString("DefaultConnection"));
+			}
+		);
+
+		services.AddAuthentication(options =>
+		{
+			options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+			options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+		})
+			.AddJwtBearer(options => 
+			{			
+				#if DEBUG
+					options.RequireHttpsMetadata = false;
+				#else
+					options.RequireHttpsMetadata = true;
+				#endif
+			
+				options.SaveToken = true;
+				options.TokenValidationParameters = new TokenValidationParameters
+				{
+					ClockSkew = TimeSpan.Zero,
+			
+					ValidateAudience = true,
+					ValidAudience = jwtOptions.Audience,
+			
+					ValidateIssuer = true,
+					ValidIssuer = jwtOptions.Issuer,
+			
+					ValidateLifetime = true,
+			
+					ValidateIssuerSigningKey = true,
+					IssuerSigningKey = jwtOptions.GetSecurityKey()
+				};
+			});
+
+		services.AddAuthorizationBuilder()
+			.AddDefaultPolicy("Authenticated", policy =>
+			{
+				// policy.RequireAssertion(context => true);
+				policy.RequireAuthenticatedUser();
+				policy.RequireClaim(ClaimTypes.NameIdentifier);
+				policy.RequireClaim(ClaimTypes.Role);
+			});
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -35,17 +79,19 @@ public class Startup
         }
 
         app.UseHttpsRedirection();
-        // app.UseStaticFiles();
-        app.UseStaticFiles(
-            new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider( Path.Combine(Directory.GetCurrentDirectory(), "Resources") ),
-                RequestPath = "/Resources"
-            }
-        );
+        // app.UseStaticFiles(
+        //     new StaticFileOptions
+        //     {
+        //         FileProvider = new PhysicalFileProvider( Path.Combine(Directory.GetCurrentDirectory(), "Resources") ),
+        //         RequestPath = "/Resources"
+        //     }
+        // );
 
 
         app.UseRouting();
+
+		app.UseAuthentication();
+		app.UseAuthorization();
 
         app.UseEndpoints(endpoints =>
         {

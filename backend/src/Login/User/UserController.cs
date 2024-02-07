@@ -1,27 +1,24 @@
-using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 
-namespace PulsePlay;
+namespace ProjectMana;
 
 [ApiController]
 [Route("api/users")]
-public class UserController : Controller<UserRepository, User>
+public class UserController(AppDbContext repo, JwtOptions jwtOptions) : Controller<User>(repo)
 {
-
-    public UserController(UserRepository repository) : base(repository) {}
-
-    /// <summary>
-    /// Get all users
-    /// </summary>
-    /// <returns>
-    /// All users
-    /// </returns>
-    [HttpGet]
-    public async Task<ActionResult<List<User>>> GetAll()
-    {
-        return await repository.GetUsers();
-    }
+	/// <summary>
+	/// Get all users
+	/// </summary>
+	/// <returns>
+	/// All users
+	/// </returns>
+	[HttpGet]
+    public async Task<List<User>> GetAll() =>
+		await repository.Users.ToListAsync();
 
     /// <summary>
     /// Get a user by id
@@ -31,60 +28,60 @@ public class UserController : Controller<UserRepository, User>
     /// The user with the given id
     /// </returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<User>> GetById(uint id)
-    {
-        return await repository.GetUserById(id) switch
+    public async Task<ActionResult<User>> GetById(uint id) =>
+		await repository.Users.FindAsync(id) switch
         {
-            null => NotFound(),
             User user => Ok(user),
+            null => NotFound(),
         };
-    }
 
     /// <summary>
     /// Authenticate a user
     /// </summary>
-    /// <param name="email">The email of the user</param>
+    /// <param name="username">The username of the user</param>
     /// <param name="password">The password of the user</param>
     /// <returns>
     /// The JWT token of the user,
-    ///     or NotFound if the user does not exist,
-    ///     or BadRequest if the email/password is incorrect
+    ///     or NotFound if the user does not exist
     /// </returns>
-    [HttpPost("login")]
-    public async Task<ActionResult> AuthenticateUser([FromForm]string email, [FromForm]string password)
-    {
-        return await repository.GetUserByEmailAndPassword(email, JWT.HashPassword(password)) switch
+    [HttpPost("auth")]
+    public async Task<ActionResult> AuthenticateUser([FromForm]string username, [FromForm]string password)
+	{
+		password = jwtOptions.HashPassword(password);
+		return await repository.Users.FirstOrDefaultAsync(u => u.Username == username && u.Password == password) switch
         {
+            User user => Ok( jwtOptions.GenerateFrom(user).Write() ),
             null => NotFound(),
-            User user => Ok(JsonSerializer.Serialize(JWT.Generate(user).ToString())),
         };
-    }
+	}
 
     /// <summary>
     /// Register a user
     /// </summary>
-    /// <param name="email">The email of the user</param>
+    /// <param name="username">The username of the user</param>
     /// <param name="password">The password of the user</param>
     /// <returns>
     /// The user,
     ///    or BadRequest if the user already exists
     /// </returns>
-    [HttpPost("register")]
-    public async Task<ActionResult<User>> RegisterUser([FromForm]string email, [FromForm]string password)
+    [HttpPut]
+    public ActionResult<User> RegisterUser([FromForm]string username, [FromForm]string password)
     {
-        User? result = await repository.PostUser( new()
-        {
-            email = email,
-            password = JWT.HashPassword(password)
-        });
+        EntityEntry<User>? result = repository.Users.Add( 
+			new()
+			{
+				Username = username,
+				Password = jwtOptions.HashPassword(password)
+			}
+		);
 
-        if (result is null)
+        if (result.Entity is not User user)
         {
             return BadRequest();
         }
 
         repository.SaveChanges();
-        return Ok(result);
+        return Ok(user);
     }
 
     /// <summary>
@@ -96,24 +93,59 @@ public class UserController : Controller<UserRepository, User>
     /// The updated user
     /// </returns>
     [HttpPut("{id}")]
+	[Authorize]
     public async Task<ActionResult<User>> UpdateUser(uint id, [FromForm] User user)
     {
         if (user is null)
         {
             return BadRequest();
         }
+		
+		if ( ! VerifyOwnershipOrAuthZ(id, ProjectMana.User.Authorizations.EditAnyUser, out ActionResult<User> error))
+		{
+			return error;
+		}
 
-        User? result = await repository.PutUserById(id, user with
-        {
-            password = JWT.HashPassword(user.password ?? "")
-        });
-        if (result is null)
+		User? current = await repository.Users.FindAsync(id);
+        if ( current is null )
         {
             return NotFound();
         }
 
+		EntityEntry<User> updated = repository.Users.Update( current.WithUpdatesFrom(user) );
+
         repository.SaveChanges();
-        return Ok(result);
+        return Ok(updated.Entity);
+    }
+
+    /// <summary>
+    /// Update a user's authorizations
+    /// </summary>
+    /// <param name="id">The id of the user</param>
+    /// <param name="user">The user to update</param>
+    /// <returns>
+    /// The updated user
+    /// </returns>
+    [HttpPut("auths/{id}")]
+	[Authorize]
+    public async Task<ActionResult<User>> UpdateUserAuths(uint id, [FromForm] User.Authorizations authorizations)
+    {
+		if ( ! VerifyOwnershipOrAuthZ(id, authorizations | ProjectMana.User.Authorizations.EditUserAuths, out ActionResult<User> error))
+			// Cannot give authorizations you do not have;
+			// in principle, someone who can edit auths will be Admin (and as such, have all rights), but we check just in case.
+		{
+			return error;
+		}
+
+		User? current = await repository.Users.FindAsync(id);
+        if ( current is null )
+        {
+            return NotFound();
+        }
+		current.Auth = authorizations;
+
+        repository.SaveChanges();
+        return Ok(current);
     }
 
     /// <summary>
@@ -124,17 +156,23 @@ public class UserController : Controller<UserRepository, User>
     /// The deleted user
     /// </returns>
     [HttpDelete("{id}")]
+	[Authorize]
     public async Task<ActionResult<User>> DeleteUser(uint id)
     {
-        User? result = await repository.DeleteUserById(id);
-        if (result is null)
+		if ( ! VerifyOwnershipOrAuthZ(id, ProjectMana.User.Authorizations.DeleteAnyUser, out ActionResult<User> error))
+		{
+			return error;
+		}
+
+		User? current = await repository.Users.FindAsync(id);
+        if ( current is null )
         {
             return NotFound();
         }
 
+        EntityEntry<User> deleted = repository.Users.Remove(current);
+
         repository.SaveChanges();
-        return Ok(result);
+        return Ok(deleted.Entity);
     }
-    
-    
 }

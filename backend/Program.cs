@@ -1,23 +1,25 @@
-using System.Net;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
 
-namespace PulsePlay;
+namespace ProjectMana;
+
 public class Program
 {
     public static void Main(string[] args)
     {
+		IHost host = CreateHostBuilder(args).Build();
 
-        // ServicePointManager.ServerCertificateValidationCallback += (sender, certificate, chain, sslPolicyErrors) => true;
-        CreateHostBuilder(args).Build().Run();
+		using ( IServiceScope scope = host.Services.CreateScope() )
+		{
+			scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.Migrate();
+		}
+
+        host.Run();
     }
 
-    public static IHostBuilder CreateHostBuilder(string[] args) {
-        return Host.CreateDefaultBuilder(args)
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
             .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseStartup<Startup>();
-                // webBuilder.UseUrls("https://localhost:5001");
-            });
-    }
+			{
+				webBuilder.UseStartup<Startup>();
+			});
 }
