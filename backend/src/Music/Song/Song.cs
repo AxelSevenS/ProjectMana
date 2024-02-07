@@ -14,7 +14,7 @@ public record Song
 	[JsonPropertyName("id")]
     public uint Id { get; set; }
 
-	[Column("author_id")]
+	[Required] [Column("author_id")]
 	[JsonPropertyName("author-id")]
     public uint AuthorId { get; set; } = 1;
 
@@ -27,10 +27,6 @@ public record Song
     public string Name { get; set; } = string.Empty;
 
 
-	[Required] [Column("file_name")]
-	[JsonPropertyName("file-name")]
-    public string FileName { get; set; } = string.Empty;
-
 	[Required] [Column("mime")]
 	[JsonPropertyName("mime")]
     public string MimeType { get; set; } = string.Empty;
@@ -40,12 +36,15 @@ public record Song
     public byte[] FileBytes { get; set; } = [];
 
 
+	[JsonIgnore]
+	public IList<Playlist> Playlists { get; set; } = [];
+
+
 	public Song WithUpdatesFrom(Song other) {
-		bool isFileWhole = other.FileBytes.IsNullOrEmpty() && other.FileName.IsNullOrEmpty() && other.MimeType.IsNullOrEmpty();
+		bool isFileWhole = other.FileBytes.IsNullOrEmpty() && other.MimeType.IsNullOrEmpty();
 		return this with
 		{
 			Name = other.Name ?? Name,
-			FileName = isFileWhole ? other.FileName : FileName,
 			MimeType = isFileWhole ? other.MimeType : MimeType,
 			FileBytes = isFileWhole ? other.FileBytes : FileBytes,
 		};

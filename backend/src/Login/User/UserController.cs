@@ -96,18 +96,15 @@ public class UserController(AppDbContext repo, JwtOptions jwtOptions) : Controll
 	[Authorize]
     public async Task<ActionResult<User>> UpdateUser(uint id, [FromForm] User user)
     {
-		if (
-			! VerifyAuthenticatedId(id) && 
-			! VerifyAuthorization(ProjectMana.User.Authorizations.EditAnyUser)
-		)
-		{
-			return NotFound(); // 404 to avoid giving too much information.
-		}
-		
         if (user is null)
         {
             return BadRequest();
         }
+		
+		if ( ! VerifyOwnershipOrAuthZ(id, ProjectMana.User.Authorizations.EditAnyUser, out ActionResult<User> error))
+		{
+			return error;
+		}
 
 		User? current = await repository.Users.FindAsync(id);
         if ( current is null )
@@ -115,10 +112,40 @@ public class UserController(AppDbContext repo, JwtOptions jwtOptions) : Controll
             return NotFound();
         }
 
-		EntityEntry<User>? updated = repository.Users.Update( current.WithUpdatesFrom(user) );
+		EntityEntry<User> updated = repository.Users.Update( current.WithUpdatesFrom(user) );
 
         repository.SaveChanges();
         return Ok(updated.Entity);
+    }
+
+    /// <summary>
+    /// Update a user's authorizations
+    /// </summary>
+    /// <param name="id">The id of the user</param>
+    /// <param name="user">The user to update</param>
+    /// <returns>
+    /// The updated user
+    /// </returns>
+    [HttpPut("auths/{id}")]
+	[Authorize]
+    public async Task<ActionResult<User>> UpdateUserAuths(uint id, [FromForm] User.Authorizations authorizations)
+    {
+		if ( ! VerifyOwnershipOrAuthZ(id, authorizations | ProjectMana.User.Authorizations.EditUserAuths, out ActionResult<User> error))
+			// Cannot give authorizations you do not have;
+			// in principle, someone who can edit auths will be Admin (and as such, have all rights), but we check just in case.
+		{
+			return error;
+		}
+
+		User? current = await repository.Users.FindAsync(id);
+        if ( current is null )
+        {
+            return NotFound();
+        }
+		current.Auth = authorizations;
+
+        repository.SaveChanges();
+        return Ok(current);
     }
 
     /// <summary>
@@ -132,12 +159,9 @@ public class UserController(AppDbContext repo, JwtOptions jwtOptions) : Controll
 	[Authorize]
     public async Task<ActionResult<User>> DeleteUser(uint id)
     {
-		if ( 
-			! VerifyAuthenticatedId(id) &&
-			! VerifyAuthorization(ProjectMana.User.Authorizations.DeleteAnyUser)
-		)
+		if ( ! VerifyOwnershipOrAuthZ(id, ProjectMana.User.Authorizations.DeleteAnyUser, out ActionResult<User> error))
 		{
-			return NotFound(); // 404 to avoid giving too much information.
+			return error;
 		}
 
 		User? current = await repository.Users.FindAsync(id);

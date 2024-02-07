@@ -6,6 +6,7 @@ public class AppDbContext(DbContextOptions options, JwtOptions jwtOptions) : DbC
 {
 	public DbSet<User> Users { get; set; }
 	public DbSet<Song> Songs { get; set; }
+	public DbSet<Playlist> Playlists { get; set; }
 
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -17,7 +18,7 @@ public class AppDbContext(DbContextOptions options, JwtOptions jwtOptions) : DbC
 				Id = 1,
 				Username = "AdminUser",
 				Password = jwtOptions.HashPassword("p4&nY7]S<m'l3H£59?:^^WG*p&6YPN0wt$L9]gr8\"UcjcvE):7"),
-				Auth = User.Authorizations.Admin
+				Auth = (User.Authorizations) User.Roles.Admin
 			}
 		);
 	}

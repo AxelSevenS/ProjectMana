@@ -20,6 +20,16 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
     public async Task<List<Song>> GetAll() =>
 		await repository.Songs.ToListAsync();
 
+	/// <summary>
+	/// Get all Songs
+	/// </summary>
+	/// <returns>
+	/// All Songs
+	/// </returns>
+	[HttpGet("fromPlaylist/{playlistId}")]
+    public async Task<List<Song>> GetAllInPlaylist(uint playlistId) =>
+		[.. (await repository.Playlists.Include(p => p.Songs).FirstOrDefaultAsync(p => p.Id == playlistId))?.Songs];
+
     /// <summary>
     /// Get a song by id
     /// </summary>
@@ -48,12 +58,9 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 	[Authorize]
     public async Task<ActionResult<Song>> AddSong([FromForm]string name, [FromForm]IFormFile file)
     {
-		if (
-			! TryGetAuthenticatedUserId(out uint authorId) ||
-			! VerifyAuthorization(ProjectMana.User.Authorizations.AddSongs)
-		)
+		if ( ! VerifyAuthZ(ProjectMana.User.Authorizations.CreateSongs, out uint authorId, out ActionResult<Song> error) )
 		{
-			return NotFound(); // 404 to avoid giving too much information.
+			return error;
 		}
 
 
@@ -78,13 +85,11 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 		}
 
 
-
-        EntityEntry<Song> result = repository.Songs.Add(
+        EntityEntry<Song> result = await repository.Songs.AddAsync(
 			new()
 			{
 				AuthorId = authorId,
 				Name = name,
-				FileName = file.FileName,
 				MimeType = file.ContentType,
 				FileBytes = bytes
 			}
@@ -98,7 +103,7 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
     /// Update a song
     /// </summary>
     /// <param name="id">The id of the song</param>
-    /// <param name="song">The song to update</param>
+    /// <param name="song">The updates to apply</param>
     /// <returns>
     /// The updated song
     /// </returns>
@@ -117,13 +122,9 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
             return NotFound();
         }
 
-		if (
-			! TryGetAuthenticatedUserId(out uint authorId) &&
-			current.AuthorId != authorId &&
-			! VerifyAuthorization(ProjectMana.User.Authorizations.EditAnySong)
-		)
+		if ( ! VerifyOwnershipOrAuthZ(current.AuthorId, ProjectMana.User.Authorizations.EditAnySong, out ActionResult<Song> result) )
 		{
-			return NotFound(); // 404 to avoid giving too much information.
+			return result;
 		}
 
 		EntityEntry<Song> updated = repository.Songs.Update( current.WithUpdatesFrom(song) );
@@ -149,13 +150,9 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
             return NotFound();
         }
 
-		if (
-			! TryGetAuthenticatedUserId(out uint authorId) &&
-			current.AuthorId != authorId &&
-			! VerifyAuthorization(ProjectMana.User.Authorizations.DeleteAnySong)
-		)
+		if ( ! VerifyOwnershipOrAuthZ(current.AuthorId, ProjectMana.User.Authorizations.DeleteAnySong, out ActionResult<Song> result) )
 		{
-			return NotFound(); // 404 to avoid giving too much information.
+			return result;
 		}
 
         repository.Songs.Remove(current);
