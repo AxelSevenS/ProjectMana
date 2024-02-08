@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -50,7 +51,7 @@ public class UserController(AppDbContext repo, JwtOptions jwtOptions) : Controll
 		password = jwtOptions.HashPassword(password);
 		return await repository.Users.FirstOrDefaultAsync(u => u.Username == username && u.Password == password) switch
         {
-            User user => Ok( jwtOptions.GenerateFrom(user).Write() ),
+            User user => Ok( JsonSerializer.Serialize(jwtOptions.GenerateFrom(user).Write()) ),
             null => NotFound(),
         };
 	}
