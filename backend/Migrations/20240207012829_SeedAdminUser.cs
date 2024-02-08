@@ -111,6 +111,12 @@ namespace ProjectMana.Migrations
                 name: "IX_songs_author_id",
                 table: "songs",
                 column: "author_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_users_username",
+                table: "users",
+                column: "username",
+                unique: true);
         }
 
         /// <inheritdoc />
