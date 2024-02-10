@@ -136,6 +136,9 @@ namespace ProjectMana.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Username")
+                        .IsUnique();
+
                     b.ToTable("users");
 
                     b.HasData(
