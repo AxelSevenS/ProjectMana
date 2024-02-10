@@ -123,7 +123,7 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
     /// The song,
     ///    or BadRequest if the song already exists
     /// </returns>
-    [HttpDelete("{playlistId}/removeSong/{songId}")]
+    [HttpPost("{playlistId}/removeSong/{songId}")]
 	[Authorize]
     public async Task<ActionResult<Playlist>> RemoveSongFromPlaylist(uint playlistId, uint songId)
     {

@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -44,6 +46,25 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
             Song song => Ok(song),
             null => NotFound(),
         };
+
+    /// <summary>
+    /// Get a song by id
+    /// </summary>
+    /// <param name="id">The id of the song</param>
+    /// <returns>
+    /// The song with the given id
+    /// </returns>
+    [HttpGet("file/{id}")]
+    public async Task<ActionResult> GetFileById(uint id)
+    {
+		Song? song = await repository.Songs.FindAsync(id);
+        if (song is null) 
+        {
+            return NotFound();
+        }
+
+        return new FileContentResult(song.FileBytes, song.MimeType);
+    }
 
     /// <summary>
     /// Register a song
