@@ -1,0 +1,10 @@
+// :host {
+// 	display: block;
+// 	height: 20rem;
+// }
+
+ion-col {
+	& > video, & > audio, & > img {
+		max-height: 20rem;
+	}
+}

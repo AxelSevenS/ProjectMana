@@ -1,0 +1,19 @@
+<ion-content *ngIf="song && user" [fullscreen]="true">
+  <ion-header>
+    <ion-toolbar>
+      <ion-title>
+        <ng-template [ngIf]="isOwner" [ngIfElse]="notOwner">Votre Gallerie</ng-template>
+        <ng-template #notOwner>Gallerie de {{ user.username }}</ng-template>
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>
+  <ion-list>
+    <ng-template *ngFor="let song of this.song" [ngIf]="song">
+      <app-song [song]="song"></app-song>
+    </ng-template>
+
+    <ion-infinite-scroll (ionInfinite)="onInfiniteScroll($event)">
+      <ion-infinite-scroll-content></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
+  </ion-list>
+</ion-content>

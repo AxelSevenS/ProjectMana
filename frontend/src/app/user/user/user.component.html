@@ -1,0 +1,32 @@
+<ion-item-sliding *ngIf="user" class="user-card">
+  <ion-item-options side="start">
+    <ion-button [routerLink]="['/users', user.id]" expand="block">
+      <ion-icon slot="start" name="eye-outline"></ion-icon>
+      Afficher
+    </ion-button>
+  </ion-item-options>
+  
+  <ion-item>
+    <!-- <ion-row> -->
+      <ion-col>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ user.username }}</ion-card-title>
+            <ion-card-subtitle>ID: {{ user.id }}</ion-card-subtitle>
+          </ion-card-header>
+          
+          <ion-card-content>
+            {{ user.roles }}
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    <!-- </ion-row> -->
+  </ion-item>
+
+  <ion-item-options side="end">
+    <ion-button [routerLink]="['/users/library', user.id]" color="success" expand="block">
+      <ion-icon slot="start" name="library-outline"></ion-icon>
+      Gallerie
+    </ion-button>
+  </ion-item-options>
+</ion-item-sliding>
