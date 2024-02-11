@@ -17,7 +17,7 @@ public record class JwtOptions
 	public int ExpirationSeconds { get; set; } = 3600;
 
 	public byte[] SigningKeyBytes => _signingKeyBytes ??= Encoding.ASCII.GetBytes(SigningKey);
-	private byte[] _signingKeyBytes = null!;
+	private byte[]? _signingKeyBytes = null;
 
 
 
