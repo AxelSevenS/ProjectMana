@@ -15,7 +15,7 @@ public record Song
     public uint Id { get; set; }
 
 	[Required] [Column("author_id")]
-	[JsonPropertyName("author-id")]
+	[JsonPropertyName("authorId")]
     public uint AuthorId { get; set; } = 1;
 
 	[ForeignKey(nameof(AuthorId))]
@@ -28,11 +28,11 @@ public record Song
 
 
 	[Required] [Column("mime")]
-	[JsonPropertyName("mime")]
+	[JsonPropertyName("mimeType")]
     public string MimeType { get; set; } = string.Empty;
 
 	[Required] [Column("file_bytes")]
-	[JsonPropertyName("file-bytes")]
+	[JsonPropertyName("fileBytes")]
     public byte[] FileBytes { get; set; } = [];
 
 

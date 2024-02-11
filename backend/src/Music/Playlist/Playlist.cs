@@ -14,7 +14,7 @@ public record Playlist
     public uint Id { get; set; }
 
 	[Column("author_id")]
-	[JsonPropertyName("author-id")]
+	[JsonPropertyName("authorId")]
     public uint AuthorId { get; set; } = 0;
 
 	[ForeignKey(nameof(AuthorId))]
