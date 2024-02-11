@@ -9,11 +9,11 @@ namespace ProjectMana;
 
 public record class JwtOptions
 {
-    public const string Jwt = "Jwt";
+	public const string Jwt = "Jwt";
 
-    public string Issuer { get; set; } = string.Empty;
-    public string Audience { get; set; } = string.Empty;
-    public string SigningKey { get; set; } = string.Empty;
+	public string Issuer { get; set; } = string.Empty;
+	public string Audience { get; set; } = string.Empty;
+	public string SigningKey { get; set; } = string.Empty;
 	public int ExpirationSeconds { get; set; } = 3600;
 
 	public byte[] SigningKeyBytes => _signingKeyBytes ??= Encoding.ASCII.GetBytes(SigningKey);
@@ -23,11 +23,11 @@ public record class JwtOptions
 
 	public string HashPassword(string unhashed)
 	{
-        using HMACSHA256 hmac = new(SigningKeyBytes);
+		using HMACSHA256 hmac = new(SigningKeyBytes);
 
-        Span<byte> passwordBytes = Encoding.ASCII.GetBytes(unhashed);
-        Span<byte> passwordHash = hmac.ComputeHash(passwordBytes.ToArray());
-        return Convert.ToBase64String(passwordHash);
+		Span<byte> passwordBytes = Encoding.ASCII.GetBytes(unhashed);
+		Span<byte> passwordHash = hmac.ComputeHash(passwordBytes.ToArray());
+		return Convert.ToBase64String(passwordHash);
 	}
 
 	public SymmetricSecurityKey GetSecurityKey()
@@ -37,7 +37,7 @@ public record class JwtOptions
 
 	public JwtSecurityToken GenerateFrom(User user)
 	{
-		
+
 		List<Claim> claims =
 		[
 			new Claim(JwtRegisteredClaimNames.Name, user.Username),
@@ -47,7 +47,7 @@ public record class JwtOptions
 			new Claim(JwtRegisteredClaimNames.Iss, Issuer),
 			new Claim(JwtRegisteredClaimNames.Aud, Audience),
 		];
- 
+
 		SigningCredentials cred = new(GetSecurityKey(), SecurityAlgorithms.HmacSha512Signature);
 		return new(
 			claims: claims,

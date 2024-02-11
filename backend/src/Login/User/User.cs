@@ -11,24 +11,24 @@ namespace ProjectMana;
 public record User
 {
 	[Key] [Column("id")]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	[JsonPropertyName("id")]
-    public uint Id { get; set; }
+	public uint Id { get; set; }
 
 	[Required] [Column("username")]
 	[JsonPropertyName("username")]
-    public string Username { get; set; } = string.Empty;
+	public string Username { get; set; } = string.Empty;
 
 	[Required] [Column("password")]
 	[JsonPropertyName("password")]
-    public string Password { get; set; } = string.Empty;
+	public string Password { get; set; } = string.Empty;
 
 	[Required] [Column("authorizations")]
 	[JsonPropertyName("authorizations")]
-    public Authorizations Auth { get; set; } = (Authorizations) Roles.User;
+	public Authorizations Auth { get; set; } = (Authorizations) Roles.User;
 
 	public User WithUpdatesFrom(User other) {
-		return this with 
+		return this with
 		{
 			Username = other.Username.IsNullOrEmpty() ? Username : other.Username,
 			Password = other.Password.IsNullOrEmpty() ? Password : other.Password
@@ -40,19 +40,19 @@ public record User
 	{
 		User = 0,
 
-		Creator = User | 
+		Creator = User |
 			Authorizations.CreateSongs |
 			Authorizations.CreatePlaylists,
 
-		Editor = Creator | 
-			Authorizations.EditAnySong | 
+		Editor = Creator |
+			Authorizations.EditAnySong |
 			Authorizations.DeleteAnySong |
 			Authorizations.EditAnyPlaylist |
 			Authorizations.DeleteAnyPlaylist,
 
-		Admin = Editor | 
-			Authorizations.EditAnyUser | 
-			Authorizations.EditUserAuths | 
+		Admin = Editor |
+			Authorizations.EditAnyUser |
+			Authorizations.EditUserAuths |
 			Authorizations.DeleteAnyUser,
 	}
 
