@@ -1,34 +1,33 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { AppComponent } from './app/app.component';
-import { SpotifySearchComponent } from './spotify-search/spotify-search.component';
-import { SpotifyService } from './spotify/spotify.service';
-import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
+import { RouteReuseStrategy, RouterModule } from '@angular/router';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+
+import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+
+import { AppComponent } from './app.page';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AuthenticationService } from './authentication/authentication.service';
+import { NotFoundPage } from './not-found/not-found.page';
 
 @NgModule({
-	declarations: [
-		AppComponent,
-		SpotifySearchComponent,
-	],
-	imports: [
-		CommonModule,
-		FormsModule,
-		HttpClientModule,
-		BrowserModule
-	],
-	exports: [
-		AppComponent,
-		SpotifySearchComponent
-	],
-	providers: [
-		HttpClient,
-		SpotifyService
-	],
-	bootstrap: [AppComponent],
-  
+  declarations: [AppComponent, NotFoundPage],
+  imports: [
+    BrowserModule,
+    HttpClientModule,
+    FormsModule,
+    RouterModule,
+    ReactiveFormsModule,
+    IonicModule.forRoot()
+  ],
+  providers: [
+    Storage,
+    HttpClient,
+    AuthenticationService,
+    { 
+      provide: RouteReuseStrategy, 
+      useClass: IonicRouteStrategy
+    }
+  ]
 })
-
-export class AppModule { }
+export class AppModule {}

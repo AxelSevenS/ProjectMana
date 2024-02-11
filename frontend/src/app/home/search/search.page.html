@@ -1,0 +1,14 @@
+<ion-tabs>
+
+    <ion-tab-bar slot="top">
+
+        <ng-template *ngFor="let page of pages" [ngIf]="page">
+            <ion-tab-button [tab]="page.path">
+                <ion-icon [name]="page.icon" aria-hidden="true"></ion-icon>
+                <ion-label>{{ page.display }}</ion-label>
+            </ion-tab-button>
+        </ng-template>
+
+    </ion-tab-bar>
+
+</ion-tabs>

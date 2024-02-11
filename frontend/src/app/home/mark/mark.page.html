@@ -1,0 +1,35 @@
+<ion-content>
+	<ion-item>
+  
+	  <ion-col>
+		<form [formGroup]="publishSongForm" (submit)="onSubmit()">
+		  
+		  <ion-list>
+			<ion-item lines="full">
+				<ion-input formControlName="name" type="text" label="Nom" labelPlacement="floating"></ion-input>
+			</ion-item>
+			
+			<ion-item lines="full">
+				<ion-textarea formControlName="description" label="Description" labelPlacement="floating"></ion-textarea>
+			</ion-item>
+
+			<ion-item lines="full">
+				<ion-input type="file" (change)="setImage($event)" formControlName="file" label="Fichier" accept="audio/*,video/*,image/*" labelPlacement="floating"></ion-input>
+			</ion-item>
+		  </ion-list>
+		  
+		  <ion-list>
+			<ion-row>
+			  <ion-col>
+				<ion-button type="submit" expand="block">
+				  Créer
+				</ion-button>
+			  </ion-col>
+			</ion-row>
+		  </ion-list>
+		  
+		</form>
+	  </ion-col>
+		
+	</ion-item>
+</ion-content>

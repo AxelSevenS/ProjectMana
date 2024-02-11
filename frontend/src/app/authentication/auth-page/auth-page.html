@@ -1,0 +1,75 @@
+<head>
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v2.1.9/css/unicons.css">
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/css/bootstrap.min.css"> -->
+</head>
+
+<ion-content>
+
+  <div class="authentication-card">
+    <h6 class="toggle-labels">
+      <ion-text color="primary">Sign In</ion-text>
+      <ion-text color="primary">Sign Up</ion-text>
+    </h6>
+    <input class="checkbox" type="checkbox" id="reg-log" name="reg-log"/>
+    <label for="reg-log"></label>
+    
+    <div class="card-3d-container">
+      <div class="card-3d-wrapper">
+          
+        <div class="card-front">
+          <form [formGroup]="loginForm" (ngSubmit)="login()" class="card-content">
+            <ion-card-header>
+              <ion-card-title color="primary">Sign In</ion-card-title>
+            </ion-card-header>
+            
+            <ion-item>
+              <ion-icon color="primary" size="medium" name="at-outline"></ion-icon>
+              <ion-input formControlName="email" type="email" [clearOnEdit]="false" placeholder="Email"></ion-input>
+            </ion-item>
+            
+            <ion-item>
+              <ion-icon color="primary" size="medium" name="lock-closed-outline"></ion-icon>
+              <ion-input formControlName="password" type="password" [clearOnEdit]="false" placeholder="Mot de Passe"></ion-input>
+            </ion-item>
+            
+            <ion-button type="submit" expand="block">Se Connecter</ion-button>
+            
+            <p class="mb-0 mt-4 text-center"><a href="https://www.web-leb.com/code" class="link">Forgot your password?</a></p>
+          </form>
+        </div>
+        
+        <div class="card-back">
+          <form [formGroup]="registerForm" (ngSubmit)="register()" class="card-content">
+            <ion-card-header>
+              <ion-card-title color="primary">Sign Up</ion-card-title>
+            </ion-card-header>
+            
+            <ion-item>
+              <ion-icon color="primary" size="medium" name="person-outline"></ion-icon>
+              <ion-input formControlName="fullName" type="text" [clearOnEdit]="false" placeholder="Nom Complet"></ion-input>
+            </ion-item>
+            
+            <ion-item>
+              <ion-icon color="primary" size="medium" name="at-outline"></ion-icon>
+              <ion-input formControlName="email" type="email" [clearOnEdit]="false" placeholder="Email"></ion-input>
+            </ion-item>
+            
+            <ion-item>
+              <ion-icon color="primary" size="medium" name="lock-closed-outline"></ion-icon>
+              <ion-input formControlName="password" type="password" [clearOnEdit]="false" placeholder="Mot de Passe"></ion-input>
+            </ion-item>
+            
+            <ion-item>
+              <ion-icon color="primary" size="medium" name="checkmark-outline"></ion-icon>
+              <ion-input formControlName="passwordConfirm" type="password" [clearOnEdit]="false" placeholder="Confirmer Mot de Passe"></ion-input>
+            </ion-item>
+            
+            <ion-button type="submit" expand="block">S'Inscrire</ion-button>
+          </form>
+        </div>
+      
+      </div>
+    </div>
+  </div>
+
+</ion-content>

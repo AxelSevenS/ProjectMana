@@ -1,11 +1,16 @@
-// import { bootstrapApplication } from '@angular/platform-browser';
-// import { appConfig } from './app/app/app.config';
-import { AppModule } from './app/app.module';
-import { AppComponent } from './app/app/app.component';
+import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
-// bootstrapApplication(AppModule, appConfig)
-//   .catch((err) => console.error(err));
+import { AppModule } from './app/app.module';
+import { environment } from './environments/environment';
+import { defineCustomElements } from '@ionic/pwa-elements/loader';
+import { AppRoutingModule } from './app/app-routing.module';
 
-platformBrowserDynamic().bootstrapModule(AppModule)
-  .catch(err => console.error(err));
+defineCustomElements(window);
+
+if (environment.production) {
+  enableProdMode();
+}
+
+platformBrowserDynamic().bootstrapModule(AppRoutingModule)
+  .catch(err => console.log(err));

@@ -1,0 +1,38 @@
+<ion-item-sliding *ngIf="song && fileUrl && mimeType" class="song-card">
+  <ion-item-options side="start">
+    <ion-button [routerLink]="['/songs', song.id]" expand="block">
+      <ion-icon slot="start" name="eye-outline"></ion-icon>
+      Afficher
+    </ion-button>
+  </ion-item-options>
+  
+  <ion-item>
+    <!-- <ion-row> -->
+      <ion-col size="5">
+        <video controls *ngIf="mimeType.startsWith('video')"><source [src]="fileUrl" [type]="mimeType"></video>
+        <audio controls *ngIf="mimeType.startsWith('audio')" [src]="fileUrl"></audio>
+        <img *ngIf="mimeType.startsWith('image')" [src]="fileUrl"/>
+      </ion-col>
+      
+      <ion-col>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ song.name }}</ion-card-title>
+            <ion-card-subtitle>ID: {{ song.id }}</ion-card-subtitle>
+          </ion-card-header>
+          
+          <ion-card-content>
+            {{ song.description }}
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    <!-- </ion-row> -->
+  </ion-item>
+
+  <ion-item-options *ngIf="this.authentication.user?.roles === 'Admin' || this.authentication.user?.id === song?.authorId" side="end">
+    <ion-button (click)="delete()" color="danger" expand="block">
+      <ion-icon slot="start" name="trash-outline"></ion-icon>
+      Supprimer
+    </ion-button>
+  </ion-item-options>
+</ion-item-sliding>
