@@ -9,21 +9,21 @@ namespace ProjectMana;
 public record Playlist
 {
 	[Key] [Column("id")]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	[JsonPropertyName("id")]
-    public uint Id { get; set; }
+	public uint Id { get; set; }
 
 	[Column("author_id")]
 	[JsonPropertyName("authorId")]
-    public uint AuthorId { get; set; } = 0;
+	public uint AuthorId { get; set; } = 0;
 
 	[ForeignKey(nameof(AuthorId))]
 	[JsonIgnore]
-    public User? Author { get; set; } = null;
+	public User? Author { get; set; } = null;
 
 	[Required] [Column("name")]
 	[JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
+	public string Name { get; set; } = string.Empty;
 
 	// [JsonIgnore]
 	public IList<Song> Songs { get; set; } = [];

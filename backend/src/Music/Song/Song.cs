@@ -10,30 +10,30 @@ namespace ProjectMana;
 public record Song
 {
 	[Key] [Column("id")]
-    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+	[DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 	[JsonPropertyName("id")]
-    public uint Id { get; set; }
+	public uint Id { get; set; }
 
 	[Required] [Column("author_id")]
 	[JsonPropertyName("authorId")]
-    public uint AuthorId { get; set; } = 1;
+	public uint AuthorId { get; set; } = 1;
 
 	[ForeignKey(nameof(AuthorId))]
 	[JsonIgnore]
-    public User? Author { get; set; } = null;
+	public User? Author { get; set; } = null;
 
 	[Required] [Column("name")]
 	[JsonPropertyName("name")]
-    public string Name { get; set; } = string.Empty;
+	public string Name { get; set; } = string.Empty;
 
 
 	[Required] [Column("mime")]
 	[JsonPropertyName("mimeType")]
-    public string MimeType { get; set; } = string.Empty;
+	public string MimeType { get; set; } = string.Empty;
 
 	[Required] [Column("file_bytes")]
 	[JsonPropertyName("fileBytes")]
-    public byte[] FileBytes { get; set; } = [];
+	public byte[] FileBytes { get; set; } = [];
 
 
 	[JsonIgnore]

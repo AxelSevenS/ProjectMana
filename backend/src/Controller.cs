@@ -9,7 +9,7 @@ namespace ProjectMana;
 
 public abstract class Controller<TData>(AppDbContext repository) : ControllerBase where TData : class
 {
-    protected readonly AppDbContext repository = repository;
+	protected readonly AppDbContext repository = repository;
 
 	/// <summary>
 	/// Check wether the user is authenticated and if the user holds the given <c>authorizations</c>
@@ -19,7 +19,7 @@ public abstract class Controller<TData>(AppDbContext repository) : ControllerBas
 	protected bool VerifyAuthorization(UserAuth authorizations)
 	{
 		if (
-			HttpContext.User.FindFirst(ClaimTypes.Role)?.Value is string claim && 
+			HttpContext.User.FindFirst(ClaimTypes.Role)?.Value is string claim &&
 			Enum.TryParse(claim, out UserAuth auth)
 		)
 		{
@@ -38,7 +38,7 @@ public abstract class Controller<TData>(AppDbContext repository) : ControllerBas
 	{
 		id = 0;
 		if (
-			HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) is Claim claim && 
+			HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) is Claim claim &&
 			uint.TryParse(Encoding.UTF8.GetBytes(claim.Value), out id)
 		)
 		{
