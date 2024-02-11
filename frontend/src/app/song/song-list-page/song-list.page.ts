@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Song } from '../song.model';
 import { SongService } from '../song.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-song-list',
@@ -9,8 +10,8 @@ import { SongService } from '../song.service';
 })
 export class SongListPage implements OnInit {
 
-  public get songs(): Song[] { return this._songs }
-  private _songs: Song[] = []
+  public get songs() { return this._songs }
+  private _songs?: Song[] | null;
 
   constructor(
     private songService: SongService
@@ -18,7 +19,12 @@ export class SongListPage implements OnInit {
   
   ngOnInit(): void {
     this.songService.getSongs()
-      .subscribe(u => this._songs = u);
+      .subscribe(songs => {
+        this._songs = null;
+        if (songs instanceof HttpErrorResponse) return;
+        
+        this._songs = songs;
+      });
   }
 
   onInfiniteScroll(event: Event) {

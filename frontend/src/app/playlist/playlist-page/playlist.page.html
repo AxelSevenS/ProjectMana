@@ -1,14 +1,9 @@
-<ion-item *ngIf="song && fileUrl">
-
+<ion-item *ngIf="playlist">
   <ion-col>
-    <audio controls [src]="fileUrl"></audio>
-  </ion-col>
-  
-  <ion-col>
-    <form [formGroup]="editSongForm" (submit)="onSubmit()">
+    <form [formGroup]="editPlaylistForm" (submit)="onSubmit()">
       
       <ion-list>
-        <ng-template [ngIf]="this.authentication.user?.id == song.authorId || this.authentication.auths.SongEditor" [ngIfElse]="isNotOwner">
+        <ng-template [ngIf]="this.authentication.user?.id == playlist.authorId || this.authentication.auths.PlaylistEditor" [ngIfElse]="isNotOwner">
           <ion-item lines="full">
             <ion-input formControlName="name" type="text" label="Nom" labelPlacement="floating"></ion-input>
           </ion-item>
@@ -17,13 +12,13 @@
         <ng-template #isNotOwner>
           <ion-item lines="full">
             <ion-label position="stacked">Nom</ion-label>
-            <ion-text>{{ this.song }}</ion-text>
+            <ion-text>{{ this.playlist }}</ion-text>
           </ion-item>
         </ng-template>
       </ion-list>
       
       <ion-list>
-        <ion-row *ngIf="this.authentication.user?.id == song.authorId || this.authentication.auths.SongEditor">
+        <ion-row *ngIf="this.authentication.user?.id == playlist.authorId || this.authentication.auths.PlaylistEditor">
           <ion-col>
             <ion-button type="submit" expand="block">
               Sauvegarder
@@ -31,15 +26,8 @@
           </ion-col>
         </ion-row>
         
-        <ion-row>
+        <ion-row *ngIf="this.authentication.user?.id == playlist.authorId || this.authentication.auths.PlaylistDeleter">
           <ion-col>
-            <ion-button [href]="fileUrl" expand="block">
-              <ion-icon slot="start" name="eye-outline"></ion-icon>
-              Afficher
-            </ion-button>
-          </ion-col>
-          
-          <ion-col *ngIf="this.authentication.user?.id == song.authorId || this.authentication.auths.SongDeleter">
             <ion-button (click)="delete()" color="danger" expand="block">
               <ion-icon slot="start" name="trash-outline"></ion-icon>
               Supprimer

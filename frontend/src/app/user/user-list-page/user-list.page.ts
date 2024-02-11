@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { User } from '../user.model';
 import { UserService } from '../user.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-user-list',
@@ -9,8 +10,8 @@ import { UserService } from '../user.service';
 })
 export class UserListPage implements OnInit {
 
-  public get users(): User[] { return this._users }
-  private _users: User[] = []
+  public get users() { return this._users }
+  private _users?: User[] | null;
 
   constructor(
     private userService: UserService
@@ -18,7 +19,12 @@ export class UserListPage implements OnInit {
   
   ngOnInit(): void {
     this.userService.getUsers()
-      .subscribe(u => this._users = u);
+      .subscribe(users => {
+        this._users = null;
+        if (users instanceof HttpErrorResponse) return;
+        
+        this._users = users;
+      });
   }
 
   onInfiniteScroll(event: Event) {

@@ -3,6 +3,7 @@ import { SongService } from '../song.service';
 import { Song } from '../song.model';
 import { AuthenticationService } from 'src/app/authentication/authentication.service';
 import { AlertController } from '@ionic/angular';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-song',
@@ -15,13 +16,16 @@ export class SongComponent implements OnInit {
 
   @Input({alias: 'song-id', transform: numberAttribute}) public id?: number;
 
+  public get optionId() { return this._optionId};
+  private _optionId = new Date().getTime().toString();
+
   public get authentication() { return this._authentication }
 
   public get fileUrl() { return this._fileUrl }
-  private _fileUrl: string | null = null;
+  private _fileUrl?: string | null;
 
   public get mimeType() { return this._mimeType }
-  private _mimeType: string | null = null;
+  private _mimeType?: string | null;
 
   constructor(
     private _authentication: AuthenticationService,
@@ -33,18 +37,17 @@ export class SongComponent implements OnInit {
     if (this.id && ! this.song) {
       this.songService.getSongById(this.id)
         .subscribe(song => {
+          if (song instanceof HttpErrorResponse) return;
           this.song = song;
-          this.updateSongData();
+          this._fileUrl = this.songService.getSongFileUrl(this.song);
         })
     } else if (! this.id && this.song) {
       this.id = this.song.id;
-      this.updateSongData();
+      this._fileUrl = this.songService.getSongFileUrl(this.song);
     }
   }
 
   private updateSongData() {
-    this._fileUrl = this.song ? this.songService.getSongFileUrl(this.song) : null;
-    this._mimeType = this.song ? this.songService.getSongMimeType(this.song) : null;
   }
 
   async delete() {

@@ -10,6 +10,7 @@ namespace ProjectMana;
 public record class JwtOptions
 {
 	public const string Jwt = "Jwt";
+	public const string RoleClaim = "roles";
 
 	public string Issuer { get; set; } = string.Empty;
 	public string Audience { get; set; } = string.Empty;
@@ -18,8 +19,6 @@ public record class JwtOptions
 
 	public byte[] SigningKeyBytes => _signingKeyBytes ??= Encoding.ASCII.GetBytes(SigningKey);
 	private byte[]? _signingKeyBytes = null;
-
-
 
 	public string HashPassword(string unhashed)
 	{
@@ -41,8 +40,8 @@ public record class JwtOptions
 		List<Claim> claims =
 		[
 			new Claim(JwtRegisteredClaimNames.Name, user.Username),
-			new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-			new Claim(ClaimTypes.Role, ((byte)user.Auth).ToString()),
+			new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+			new Claim(RoleClaim, user.Auth.GetRoles()),
 
 			new Claim(JwtRegisteredClaimNames.Iss, Issuer),
 			new Claim(JwtRegisteredClaimNames.Aud, Audience),

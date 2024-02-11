@@ -3,8 +3,9 @@ import { Observable, catchError, map, of } from 'rxjs';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { JwtPayload, jwtDecode } from 'jwt-decode';
-import { User } from '../user/user.model';
+import { User, UserAuths } from '../user/user.model';
 import { Router } from '@angular/router';
+import { UserService } from '../user/user.service';
 
 export declare type LoginState = 'loggedIn' | 'loggedOut' | 'disconnected';
 
@@ -15,17 +16,17 @@ export class AuthenticationService {
 
   public static readonly storageKey: string = "JWT";
 
+  public get state() { return this._state }
   private _state: LoginState;
-  public get state() : LoginState {
-    return this._state;
-  }
 
   private _user: User | null = null;
-  public get user() : User | null {
-    return this._user;
-  }
+  public get user() { return this._user }
+
+  private _auths: UserAuths = this.userService.getAuths(undefined);
+  public get auths() { return this._auths }
 
   constructor(
+    private userService: UserService,
     private http: HttpClient,
     private router: Router
   ) {
@@ -41,10 +42,12 @@ export class AuthenticationService {
     }
 
     this._user = user;
+    this._auths = this.userService.getAuths(this._user);
     this._state = 'loggedIn';
   }
 
-  login(username: string, password: string) {
+
+  login(username: string, password: string): Observable<User | HttpErrorResponse> {
     const formData = new FormData();
     formData.append('username', username);
     formData.append('password', password);
@@ -59,19 +62,19 @@ export class AuthenticationService {
           
           localStorage.setItem(AuthenticationService.storageKey, res);
           this._state = 'loggedIn';
+          this._auths = this.userService.getAuths(this._user);
           return this._user;
         }), 
-        catchError(err => {
+        catchError((err: HttpErrorResponse) => {
           this._user = null;
-          if (err instanceof HttpErrorResponse) {
-            this._state = err.error == 0 ? 'disconnected' : 'loggedOut';
-          }
-          return of(this._user);
+          this._state = err.error == 0 ? 'disconnected' : 'loggedOut';
+          this._auths = this.userService.getAuths(undefined);
+          return of(err);
         })
       );
   }
 
-  register(username: string, password: string) {
+  register(username: string, password: string): Observable<User | HttpErrorResponse> {
     const formData = new FormData();
     formData.append('username', username);
     formData.append('password', password);
@@ -80,7 +83,7 @@ export class AuthenticationService {
 
     return this.http.put<User>(`${environment.host}/api/users/`, formData, {headers: headers})
       .pipe(
-        catchError(err => of(null) )
+        catchError(err => of(err) )
       );
   }
 
@@ -99,8 +102,9 @@ export class AuthenticationService {
       ! decoded.roles ||
       ! decoded.exp ||
       decoded.exp <= Math.floor(Date.now() / 1000)
-    )
-      return null;
+      ) {
+        return null;
+      }
     
     return {
       id: parseInt(decoded.sub),
@@ -114,5 +118,5 @@ export class AuthenticationService {
 interface UserPayload extends JwtPayload {
   sub?: string,
   name?: string,
-  roles?: "Admin" | "Client"
+  roles?: string
 }

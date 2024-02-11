@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthenticationService } from '../authentication.service';
 import { Router } from '@angular/router';
 import { AuthenticationValidators } from '../authentication-utility';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-auth-page',
@@ -13,7 +14,7 @@ import { AuthenticationValidators } from '../authentication-utility';
 export class AuthPage implements OnInit {
 
   loginForm: FormGroup = this.formBuilder.group({
-    email: ['', Validators.compose([Validators.required, Validators.email])],
+    email: ['', /* Validators.compose([ */Validators.required/* , Validators.email]) */],
     password: ['', Validators.required],
   });
 
@@ -41,20 +42,20 @@ export class AuthPage implements OnInit {
   login() {
     this.authenticationService.login(this.loginForm.controls["email"].value, this.loginForm.controls["password"].value)
       .subscribe(u => {
-        if (u !== null) {
-          this.router.navigate([''])
-            .then(() => window.location.reload())
-        }
+        if (u instanceof HttpErrorResponse) { return };
+
+        this.router.navigate([''])
+          .then(() => window.location.reload())
       })
   }
 
   register() {
     this.authenticationService.register(this.registerForm.controls["email"].value, this.registerForm.controls["password"].value)
       .subscribe(u => {
-        if (u !== null) {
-          this.router.navigate([''])
-            .then(() => window.location.reload())
-        }
+        if (u instanceof HttpErrorResponse) { return };
+
+        this.router.navigate([''])
+          .then(() => window.location.reload())
       })
   }
 

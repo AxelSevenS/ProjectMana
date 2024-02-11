@@ -1,10 +1,14 @@
-<ion-content>
+<ng-template [ngIf]="users" [ngIfElse]="noUsers">
   <ion-list>
-    <ng-template *ngFor="let user of this.users" [ngIf]="user">
-      <app-user [user]="user"></app-user>
-    </ng-template>
-    <!-- <ion-infinite-scroll (ionInfinite)="onInfiniteScroll($event)">
-      <ion-infinite-scroll-content></ion-infinite-scroll-content>
-    </ion-infinite-scroll> -->
+    <app-user *ngFor="let user of users" [user]="user"></app-user>
   </ion-list>
-</ion-content>
+  <!-- <ion-infinite-scroll (ionInfinite)="onInfiniteScroll($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll> -->
+</ng-template>
+<ng-template #noUsers>
+  <ion-title>
+    <h1>Il n'y a aucun Utilisateur, pour l'instant...</h1>
+    <ion-text>Vous pouvez nous rejoindre <a [routerLink]="['/authentication']">ici</a>. N'attendez plus!</ion-text>
+  </ion-title>
+</ng-template>

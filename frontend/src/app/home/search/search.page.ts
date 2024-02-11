@@ -17,6 +17,11 @@ export class SearchPage {
 			display: 'Utilisateurs',
 			icon: 'person-outline'
 		},
+		{
+			path: 'playlists',
+			display: 'Playlists',
+			icon: 'list-outline'
+		},
 	];
 
   public get pages() { return SearchPage.PAGES; }

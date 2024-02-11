@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  host: process.env['API_URL'] || 'http://localhost:5001'
+  host: /* process.env['API_URL'] || */ 'http://localhost:5000'
 };
 
 /*

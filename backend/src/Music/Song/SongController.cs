@@ -19,8 +19,8 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 	/// All Songs
 	/// </returns>
 	[HttpGet]
-	public async Task<List<Song>> GetAll() =>
-		await repository.Songs.ToListAsync();
+	public async Task<ActionResult<List<Song>>> GetAll() =>
+		Ok(await repository.Songs.ToListAsync());
 
 	/// <summary>
 	/// Get all Songs
@@ -29,8 +29,13 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 	/// All Songs
 	/// </returns>
 	[HttpGet("fromPlaylist/{playlistId}")]
-	public async Task<List<Song>> GetAllInPlaylist(uint playlistId) =>
-		[.. (await repository.Playlists.Include(p => p.Songs).FirstOrDefaultAsync(p => p.Id == playlistId))?.Songs];
+	public async Task<ActionResult<List<Song>>> GetAllInPlaylist(uint playlistId) =>
+		await repository.Playlists.Include(p => p.Songs)
+			.FirstOrDefaultAsync(p => p.Id == playlistId) switch
+		{
+			Playlist playlist => Ok(playlist.Songs),
+			null => NotFound()
+		};
 
 	/// <summary>
 	/// Get a song by id
@@ -44,6 +49,21 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 		await repository.Songs.FindAsync(id) switch
 		{
 			Song song => Ok(song),
+			null => NotFound(),
+		};
+
+	/// <summary>
+	/// Get a song by id
+	/// </summary>
+	/// <param name="id">The id of the song</param>
+	/// <returns>
+	/// The song with the given id
+	/// </returns>
+	[HttpGet("byAuthor/{id}")]
+	public async Task<ActionResult<List<Song>>> GetByAuthorId(uint id) =>
+		repository.Songs.Where(s => s.AuthorId == id) switch
+		{
+			IQueryable<Song> songQuery => Ok(await songQuery.ToListAsync()),
 			null => NotFound(),
 		};
 

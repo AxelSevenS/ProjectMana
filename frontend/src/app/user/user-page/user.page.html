@@ -2,68 +2,68 @@
   <ion-header>
     <ion-toolbar>
       <ion-title>
-        <ng-template [ngIf]="isOwner" [ngIfElse]="notOwner">Votre Profil</ng-template>
+        <ng-template [ngIf]="this.authentication.user?.id == user.id" [ngIfElse]="notOwner">Votre Profil</ng-template>
         <ng-template #notOwner>Profile de {{ user.username }}</ng-template>
       </ion-title>
     </ion-toolbar>
   </ion-header>
   
-  <ion-item *ngIf="this.user">
-    <ion-col>
-      <form [formGroup]="editUserForm" (submit)="onSubmit()">
-        
-        <ng-template [ngIf]="this.isOwner" [ngIfElse]="isNotOwner">
-          
-          <ion-item lines="full">
-            <ion-input formControlName="username" type="text" label="Nom d'Utilisateur" labelPlacement="floating"></ion-input>
-          </ion-item>
-          
-          <ion-item lines="full">
-            <ion-input formControlName="password" type="password" [clearOnEdit]="false" label="Mot de Passe" labelPlacement="floating" errorText="Mot de Passe invalide"></ion-input>
-          </ion-item>
-          
-          <ion-item lines="full">
-            <ion-input formControlName="passwordConfirm" type="password" [clearOnEdit]="false" label="Confirmer le Mot de Passe" labelPlacement="floating" errorText="Mot de Passe invalide"></ion-input>
-          </ion-item>
-          
-        </ng-template>
-        <ng-template #isNotOwner>
-          
-          <ion-item lines="full">
-            <ion-label position="stacked">Nom d'Utilisateur</ion-label>
-            <ion-text>{{ this.user.username }}</ion-text>
-          </ion-item>
-          
-        </ng-template>
-        
+  <div *ngIf="this.user" class="content-container">
+    <form [formGroup]="editUserForm" (submit)="onSubmit()" class="form-col">
+      
+      <ng-template [ngIf]="this.authentication.user?.id == user.id || this.authentication.auths.UserEditor" [ngIfElse]="isNotOwner">
         <ion-item lines="full">
-          <ion-label position="stacked">Rôle</ion-label>
-          
-          <ng-template [ngIf]="this.isAdmin" [ngIfElse]="isNotAdmin">
-            <ion-select placeholder="Rôle" [value]="this.user.roles" labelPlacement="stacked">
-              <ion-select-option value="Admin">Admin</ion-select-option>
-              <ion-select-option value="Client">Client</ion-select-option>
-            </ion-select>
-          </ng-template>
-          <ng-template #isNotAdmin>
-            <ion-text>{{ this.user.roles }}</ion-text>
-          </ng-template>
+          <ion-input formControlName="username" type="text" label="Nom d'Utilisateur" labelPlacement="floating"></ion-input>
+        </ion-item>
+      </ng-template>
+      <ng-template #isNotOwner>
+        <ion-item lines="full">
+          <ion-label position="stacked">Nom d'Utilisateur</ion-label>
+          <ion-text>{{ this.user.username }}</ion-text>
+        </ion-item>
+      </ng-template>
+
+      <ng-template [ngIf]="this.authentication.user?.id == user.id">
+        <ion-item lines="full">
+          <ion-input formControlName="password" type="password" [clearOnEdit]="false" label="Mot de Passe" labelPlacement="floating" errorText="Mot de Passe invalide"></ion-input>
         </ion-item>
         
-        <ion-list *ngIf="this.isOwner || this.isAdmin">
-          <ion-row>
-            <ion-col>
-              <ion-button type="submit" expand="block">
-                Sauvegarder
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </ion-list>
+        <ion-item lines="full">
+          <ion-input formControlName="passwordConfirm" type="password" [clearOnEdit]="false" label="Confirmer le Mot de Passe" labelPlacement="floating" errorText="Mot de Passe invalide"></ion-input>
+        </ion-item>
+      </ng-template>
+      
+      <ion-item lines="full">
+        <ion-label position="stacked">Rôle</ion-label>
         
-      </form>
-    </ion-col>
+        <ng-template [ngIf]="this.authentication.auths.AuthEditor">
+          <ion-select formControlName="roles" placeholder="Autorisations" labelPlacement="stacked" [multiple]="true">
+            <ion-select-option value="UserEditor" [disabled]="!this.authentication.auths.UserEditor">Modifier n'importe quel Utilisateur</ion-select-option>
+            <ion-select-option value="AuthEditor" [disabled]="!this.authentication.auths.AuthEditor">Modifier des Autorisations</ion-select-option>
+            <ion-select-option value="UserDeleter" [disabled]="!this.authentication.auths.UserDeleter">Supprimer n'importe quel Utilisateur</ion-select-option>
+            <ion-select-option value="SongCreator" [disabled]="!this.authentication.auths.SongCreator">Ajouter des Chansons</ion-select-option>
+            <ion-select-option value="SongEditor" [disabled]="!this.authentication.auths.SongEditor">Modifier n'importe quelle Chanson</ion-select-option>
+            <ion-select-option value="SongDeleter" [disabled]="!this.authentication.auths.SongDeleter">Supprimer n'importe quelle Chanson</ion-select-option>
+            <ion-select-option value="PlaylistCreator" [disabled]="!this.authentication.auths.PlaylistCreator">Créer des Playlists</ion-select-option>
+            <ion-select-option value="PlaylistEditor" [disabled]="!this.authentication.auths.PlaylistEditor">Modifier n'importe quelle Playlist</ion-select-option>
+            <ion-select-option value="PlaylistDeleter" [disabled]="!this.authentication.auths.PlaylistDeleter">Supprimer n'importe quelle Playlist</ion-select-option>
+          </ion-select>
+        </ng-template>
+      </ion-item>
+      
+      <ion-list *ngIf="this.authentication.user?.id == user.id || this.authentication.auths.UserEditor">
+        <ion-row>
+          <ion-col>
+            <ion-button type="submit" expand="block">
+              Sauvegarder
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </ion-list>
+      
+    </form>
 
-    <ion-list *ngIf="this.isOwner">
+    <ion-list *ngIf="this.authentication.user?.id == user.id" class="error-list">
       <ion-item class="block">
         <ion-text [color]="editUserForm.controls['password'].errors?.['PasswordNoUppercase'] ? 'danger' : 'success'" >Au moins une lettre majuscule.</ion-text>
       </ion-item>
@@ -83,6 +83,6 @@
         <ion-text [color]="editUserForm.errors?.['PasswordNoMatch'] ? 'danger' : 'success'" >Les deux Mots de Passe doivent correspondrent.</ion-text>
       </ion-item>
     </ion-list>
-  </ion-item>
+  </div>
   
 </ion-content>

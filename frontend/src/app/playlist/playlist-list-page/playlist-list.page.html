@@ -1,13 +1,13 @@
-<ng-template [ngIf]="songs" [ngIfElse]="noSongs">
+<ng-template [ngIf]="playlists" [ngIfElse]="noPlaylists">
   <ion-list>
-    <app-song *ngFor="let song of songs" [song]="song"></app-song>
+    <app-playlist *ngFor="let playlist of playlists" [playlist]="playlist"></app-playlist>
   </ion-list>
   <!-- <ion-infinite-scroll (ionInfinite)="onInfiniteScroll($event)">
     <ion-infinite-scroll-content></ion-infinite-scroll-content>
   </ion-infinite-scroll> -->
 </ng-template>
-<ng-template #noSongs>
+<ng-template #noPlaylists>
   <ion-title>
-    <h1>Il n'y a aucune Chanson disponible, pour l'instant...</h1>
+    <h1>Il n'y a aucune Playlist disponible, pour l'instant...</h1>
   </ion-title>
 </ng-template>

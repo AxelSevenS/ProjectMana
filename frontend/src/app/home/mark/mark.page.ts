@@ -1,3 +1,4 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -46,10 +47,9 @@ export class MarkPage {
       this.publishSongForm.controls['description'].value, 
       this.file
     )
-      .subscribe(res => {
-        if (res) {
-          this.router.navigate(['/song', res.id]);
-        }
+      .subscribe(song => {
+        if (song instanceof HttpErrorResponse) return;
+        this.router.navigate(['/song', song.id]);
       })
   }
 }
