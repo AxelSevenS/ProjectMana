@@ -49,12 +49,17 @@ export class AuthPage implements OnInit {
   }
 
   register() {
-    this.authenticationService.register(this.registerForm.controls["username"].value, this.registerForm.controls["password"].value)
+    let username = this.registerForm.controls["username"].value;
+    let password = this.registerForm.controls["password"].value;
+    this.authenticationService.register(username, password)
       .subscribe(u => {
         if (u instanceof HttpErrorResponse) { return };
 
-        this.router.navigate([''])
-          .then(() => window.location.reload())
+        this.authenticationService.login(username, password)
+          .subscribe(() => {
+            this.router.navigate([''])
+              .then(() => window.location.reload())
+          })
       })
   }
 

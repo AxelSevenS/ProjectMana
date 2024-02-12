@@ -5,7 +5,7 @@
   </ion-col>
   
   <ion-col>
-    <form [formGroup]="editSongForm" (submit)="onSubmit()">
+    <form [formGroup]="editSongForm">
       
       <ion-list>
         <ng-template [ngIf]="this.authentication.user?.id == song.authorId || this.authentication.auths.SongEditor" [ngIfElse]="isNotOwner">
@@ -17,13 +17,13 @@
         <ng-template #isNotOwner>
           <ion-item lines="full">
             <ion-label position="stacked">Nom</ion-label>
-            <ion-text>{{ this.song }}</ion-text>
+            <ion-text>{{ this.song.name }}</ion-text>
           </ion-item>
         </ng-template>
       </ion-list>
       
       <ion-list>
-        <ion-row *ngIf="this.authentication.user?.id == song.authorId || this.authentication.auths.SongEditor">
+        <ion-row (click)="onSubmit()" *ngIf="this.authentication.user?.id == song.authorId || this.authentication.auths.SongEditor">
           <ion-col>
             <ion-button type="submit" expand="block">
               Sauvegarder

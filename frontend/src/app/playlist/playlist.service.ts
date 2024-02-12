@@ -31,13 +31,6 @@ export class PlaylistService {
       }));
   }
 
-  getPlaylistByPlaylistId(id: number): Observable<Playlist[] | HttpErrorResponse> {
-    return this.http.get<Playlist[]>(`${environment.host}/api/playlists/fromPlaylist/${id}`)
-      .pipe( catchError((err: HttpErrorResponse) => {
-        return of(err);
-      }));
-  }
-
   getPlaylistByAuthorId(id: number): Observable<Playlist[] | HttpErrorResponse> {
     return this.http.get<Playlist[]>(`${environment.host}/api/playlists/byAuthor/${id}`)
       .pipe( catchError((err: HttpErrorResponse) => {
@@ -45,11 +38,9 @@ export class PlaylistService {
       }));
   }
 
-  createPlaylist(name: string, description: string, file: Blob): Observable<Playlist | HttpErrorResponse> {
+  createPlaylist(name: string): Observable<Playlist | HttpErrorResponse> {
     const formData = new FormData();
     formData.append('name', name);
-    formData.append('description', description);
-    formData.append('file', file);
 
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}`, 'enctype': 'multipart/form-data' });
 

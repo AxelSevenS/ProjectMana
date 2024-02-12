@@ -7,6 +7,7 @@ import { SongModule } from 'src/app/song/song.module';
 import { UserModule } from 'src/app/user/user.module';
 import { PlaylistListPage } from 'src/app/playlist/playlist-list-page/playlist-list.page';
 import { PlaylistModule } from 'src/app/playlist/playlist.module';
+import { SearchModule } from './search.module';
 
 const routes: Routes = [
   {
@@ -39,6 +40,7 @@ const routes: Routes = [
     SongModule,
     UserModule,
     PlaylistModule,
+    SearchModule,
     RouterModule.forChild(routes)
   ],
 })

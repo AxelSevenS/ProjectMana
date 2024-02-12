@@ -1,49 +1,56 @@
 <ion-app>
-	<ion-header [translucent]="true">
-		<ion-toolbar>
-			<ion-buttons slot="start">
-				<ion-button [routerLink]="['']" fill="clear" size="large" shape="round">MusicPulse</ion-button>
-			</ion-buttons>
-
-			<ion-buttons slot="end">
-				<ng-template [ngIf]="this.authentication.user" [ngIfElse]="loggedOut">
-					<ion-card-header>
-						<ion-text>Bienvenue, {{ this.authentication.user.username }}</ion-text>
-					</ion-card-header>
-					<ion-button id="avatar-button">
-						<ion-avatar>
-							<img alt="Silhouette of a person's head" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
-						</ion-avatar>
-					</ion-button>
-					<ion-popover trigger="avatar-button" triggerAction="click">
-					  <ng-template>
-						<ion-button [routerLink]="['/users', this.authentication.user.id]">
-							<ion-icon name="settings-outline" slot="start"></ion-icon>
-							<ion-text>Paramètres</ion-text>
-						</ion-button>
-						<ion-button [routerLink]="['/users/library', this.authentication.user.id]">
-							<ion-icon name="library-outline" slot="start"></ion-icon>
-							<ion-text>Ma Gallerie</ion-text>
-						</ion-button>
-						<ion-button (click)="this.authentication.logout()">
-							<ion-icon name="log-out-outline" slot="start"></ion-icon>
-							<ion-text>Se Déconnecter</ion-text>
-						</ion-button>
-					  </ng-template>
-					</ion-popover>
-				</ng-template>
+	<ion-tabs>
+		<ion-header [translucent]="true">
+			<ion-toolbar slot="top">
+				<ion-buttons slot="start">
+					<ion-button [routerLink]="['']" fill="clear" size="large" shape="round">Pulse</ion-button>
+				</ion-buttons>
 		
-				<ng-template #loggedOut>
-					<ion-button [routerLink]="['/authentication/login']" color="primary" fill="solid" expand="block">
-						<ion-icon name="log-in-outline" slot="start"></ion-icon>
-						<ion-title>Se Connecter</ion-title>
-					</ion-button>
-				</ng-template>
-			</ion-buttons>
-		</ion-toolbar>
-	</ion-header>
-	
-	<ion-content>
-		<ion-router-outlet></ion-router-outlet>
-	</ion-content>
+				<ion-tab-bar id="headerTabs">
+					<ng-template *ngFor="let page of pages" [ngIf]="page">
+						<ion-tab-button [tab]="page.path">
+							<ion-icon [name]="page.icon" aria-hidden="true"></ion-icon>
+							<ion-label>{{ page.display }}</ion-label>
+						</ion-tab-button>
+					</ng-template>
+				</ion-tab-bar>
+
+				<ion-buttons slot="end">
+					<ng-template [ngIf]="this.authentication.user" [ngIfElse]="loggedOut">
+						<ion-card-header>
+							<ion-text>Bienvenue, {{ this.authentication.user.username }}</ion-text>
+						</ion-card-header>
+						<ion-button id="avatar-button">
+							<ion-avatar>
+								<img alt="Silhouette of a person's head" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
+							</ion-avatar>
+						</ion-button>
+						<ion-popover trigger="avatar-button" triggerAction="click">
+							<ng-template>
+							<ion-button [routerLink]="['/users', this.authentication.user.id]">
+								<ion-icon name="settings-outline" slot="start"></ion-icon>
+								<ion-text>Paramètres</ion-text>
+							</ion-button>
+							<ion-button [routerLink]="['/users/library', this.authentication.user.id]">
+								<ion-icon name="library-outline" slot="start"></ion-icon>
+								<ion-text>Ma Galerie</ion-text>
+							</ion-button>
+							<ion-button (click)="this.authentication.logout()">
+								<ion-icon name="log-out-outline" slot="start"></ion-icon>
+								<ion-text>Se Déconnecter</ion-text>
+							</ion-button>
+							</ng-template>
+						</ion-popover>
+					</ng-template>
+			
+					<ng-template #loggedOut>
+						<ion-button [routerLink]="['/authentication/login']" color="primary" fill="solid" expand="block">
+							<ion-icon name="log-in-outline" slot="start"></ion-icon>
+							<ion-title>Se Connecter</ion-title>
+						</ion-button>
+					</ng-template>
+				</ion-buttons>
+			</ion-toolbar>
+		</ion-header>
+	</ion-tabs>
 </ion-app>

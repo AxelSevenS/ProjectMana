@@ -8,16 +8,19 @@ import { AuthenticationValidators } from 'src/app/authentication/authentication-
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
-  selector: 'app-user-page',
-  templateUrl: 'user.page.html',
-  styleUrls: ['user.page.scss'],
+  selector: 'app-password-edit',
+  templateUrl: 'password-edit.page.html',
+  styleUrls: ['password-edit.page.scss'],
 })
-export class UserPage {
+export class PasswordEditPage {
 
   editUserForm: FormGroup = this.formBuilder.group(
     {
-      username: ['', Validators.required],
-      roles: []
+      password: ['', Validators.compose([Validators.required, AuthenticationValidators.securePasswordValidator])],
+      passwordConfirm: ['', Validators.compose([Validators.required, AuthenticationValidators.securePasswordValidator])],
+    }, 
+    {
+      validators: AuthenticationValidators.confirmPasswordValidator('password', 'passwordConfirm')
     }
   );
 
@@ -26,9 +29,6 @@ export class UserPage {
 
   public get user() { return this._user }
   private _user?: User | null;
-
-  public get auths() { return this._auths }
-  private _auths: UserAuths = this.userService.getAuths(undefined);
 
 
 
@@ -41,31 +41,25 @@ export class UserPage {
   ) {}
   
   ngOnInit(): void {
-    this.userService.getUserById(this.requestId)
-      .subscribe(user => {
-        if (user instanceof HttpErrorResponse) return;
-        this._user = user;
-        this._auths = this.userService.getAuths(this._user.roles);
-
-        this.editUserForm.controls['username'].setValue(this._user.username);
-        this.editUserForm.controls['roles'].setValue(this.userService.getRolesList(this._auths));
-      });
   }
 
   onSubmit(): void {
-    if ( ! this.user ) return;
+    if ( ! this.authentication.user ) return;
     if ( ! this.editUserForm.valid ) return;
 
-    let updated = {
-      username: this.editUserForm.controls['username'].value,
-      roles: this.editUserForm.controls['roles'].value.join(',')
+    let user = {
+      password: this.editUserForm.controls['password'].value
     };
 
-    this.userService.updateUserById(this.requestId, updated)
+    this.userService.updateUserById(this.authentication.user.id, user)
       .subscribe(res => {
-        if (res && this.requestId == this.authentication.user?.id && this.user?.username != updated.username) {
-          this.authentication.logout();
-          this.router.navigate(['/authentication/login']);
+        if (res) {
+          if (res instanceof HttpErrorResponse) return;
+
+          this.authentication.login(res.username, user.password)
+            .subscribe(() => {
+              window.location.reload();
+            });
         }
       });
   }

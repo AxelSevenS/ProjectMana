@@ -16,17 +16,17 @@ export class UserService {
     private http: HttpClient
   ) { }
 
-  getAuths(user?: User): UserAuths {
+  getAuths(roles?: string): UserAuths {
     return {
-      UserEditor: user?.roles?.includes("UserEditor") ?? false,
-      AuthEditor: user?.roles?.includes("AuthEditor") ?? false,
-      UserDeleter: user?.roles?.includes("UserDeleter") ?? false,
-      SongCreator: user?.roles?.includes("SongCreator") ?? false,
-      SongEditor: user?.roles?.includes("SongEditor") ?? false,
-      SongDeleter: user?.roles?.includes("SongDeleter") ?? false,
-      PlaylistCreator: user?.roles?.includes("PlaylistCreator") ?? false,
-      PlaylistEditor: user?.roles?.includes("PlaylistEditor") ?? false,
-      PlaylistDeleter: user?.roles?.includes("PlaylistDeleter") ?? false,
+      UserEditor: roles?.includes("UserEditor") ?? false,
+      AuthEditor: roles?.includes("AuthEditor") ?? false,
+      UserDeleter: roles?.includes("UserDeleter") ?? false,
+      SongCreator: roles?.includes("SongCreator") ?? false,
+      SongEditor: roles?.includes("SongEditor") ?? false,
+      SongDeleter: roles?.includes("SongDeleter") ?? false,
+      PlaylistCreator: roles?.includes("PlaylistCreator") ?? false,
+      PlaylistEditor: roles?.includes("PlaylistEditor") ?? false,
+      PlaylistDeleter: roles?.includes("PlaylistDeleter") ?? false,
     }
   }
   
@@ -79,15 +79,19 @@ export class UserService {
       }));
   }
 
-  updateUserById(id: number, user: User): Observable<User | HttpErrorResponse> {
+  updateUserById(id: number, user: Partial<User>): Observable<User | HttpErrorResponse> {
     const formData = new FormData();
-    formData.append('username', user.username);
-    formData.append('roles', user.roles);
-    if (user?.password) formData.append('password', user.password);
+    let roles = this.getRolesFlags(this.getAuths(user.roles)).toString();
+
+    if (user.username) formData.append('username', user.username);
+    if (user.password) formData.append('password', user.password);
+    if (user.roles) formData.append('roles', roles);
 
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-    return this.http.put<User>(`${environment.host}/api/users/${id}`, formData, {headers: headers})
+    console.log(formData, headers);
+
+    return this.http.patch<User>(`${environment.host}/api/users/${id}`, formData, {headers: headers})
       .pipe( catchError((err: HttpErrorResponse) => {
         return of(err);
       }));

@@ -58,11 +58,14 @@ export class SongPage {
   onSubmit(): void {
     if ( ! this.song ) return;
     if ( ! this.editSongForm.valid ) return;
-
-    let updated: Song = this.song;
+    
     this.song.name = this.editSongForm.controls['name'].value;
+    let updated: Song = this.song;
 
-    this.songService.updateSongById(this.song.id, updated);
+    this.songService.updateSongById(this.song.id, updated)
+      .subscribe(res => {
+        console.log(res);
+      });
   }
 
   async delete() {

@@ -61,6 +61,7 @@ public record User
 	[JsonConverter(typeof(UserAuthorizationsJsonConverter))]
 	public enum Authorizations : ushort
 	{
+		None = 0,
 		EditAnyUser = 1 << 0,        // 0b0000_0000_0000_0001
 		EditUserAuths = 1 << 1,      // 0b0000_0000_0000_0010
 		DeleteAnyUser = 1 << 2,      // 0b0000_0000_0000_0100
@@ -116,7 +117,7 @@ public static class AuthorizationsExtensions
 public class UserAuthorizationsJsonConverter : JsonConverter<User.Authorizations>
 {
 	public override User.Authorizations Read( ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-		reader.GetString()!.GetAuths();
+		reader.GetString()?.GetAuths() ?? 0;
 
 	public override void Write( Utf8JsonWriter writer, User.Authorizations auths, JsonSerializerOptions options) =>
 		writer.WriteStringValue(auths.GetRoles());

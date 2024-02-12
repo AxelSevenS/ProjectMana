@@ -1,5 +1,6 @@
 <ion-tabs>
-    <ion-tab-bar slot="bottom">
+
+    <ion-tab-bar slot="top">
 
         <ng-template *ngFor="let page of pages" [ngIf]="page">
             <ion-tab-button [tab]="page.path">
@@ -9,4 +10,5 @@
         </ng-template>
 
     </ion-tab-bar>
+
 </ion-tabs>

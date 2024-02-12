@@ -10,6 +10,7 @@ import { UserComponent } from './user/user.component';
 import { RouterLink } from '@angular/router';
 import { UserLibraryPage } from './user-library-page/user-library.page';
 import { SongModule } from '../song/song.module';
+import { PasswordEditPage } from './password-edit-page/password-edit.page';
 
 @NgModule({
   imports: [
@@ -21,8 +22,8 @@ import { SongModule } from '../song/song.module';
     ReactiveFormsModule,
   ],
   providers: [UserService],
-  declarations: [UserListPage, UserLibraryPage, UserPage, UserComponent],
-  exports: [UserListPage, UserLibraryPage, UserPage, UserComponent]
+  declarations: [UserListPage, UserLibraryPage, UserPage, UserComponent, PasswordEditPage],
+  exports: [UserListPage, UserLibraryPage, UserPage, UserComponent, PasswordEditPage]
 })
 export class UserModule {
 }

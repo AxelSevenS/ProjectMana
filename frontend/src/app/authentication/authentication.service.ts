@@ -42,7 +42,7 @@ export class AuthenticationService {
     }
 
     this._user = user;
-    this._auths = this.userService.getAuths(this._user);
+    this._auths = this.userService.getAuths(this._user.roles);
     this._state = 'loggedIn';
   }
 
@@ -62,7 +62,7 @@ export class AuthenticationService {
           
           localStorage.setItem(AuthenticationService.storageKey, res);
           this._state = 'loggedIn';
-          this._auths = this.userService.getAuths(this._user);
+          this._auths = this.userService.getAuths(this._user.roles);
           return this._user;
         }), 
         catchError((err: HttpErrorResponse) => {
@@ -97,14 +97,14 @@ export class AuthenticationService {
   private jwtToUser(token: string): User | null {
     let decoded = jwtDecode<UserPayload>(token);
     if ( 
-      ! decoded.sub ||
-      ! decoded.name ||
-      ! decoded.roles ||
-      ! decoded.exp ||
+      decoded.sub === undefined ||
+      decoded.name === undefined ||
+      decoded.roles === undefined ||
+      decoded.exp === undefined ||
       decoded.exp <= Math.floor(Date.now() / 1000)
-      ) {
-        return null;
-      }
+    ) {
+      return null;
+    }
     
     return {
       id: parseInt(decoded.sub),

@@ -1,25 +1,31 @@
-<ng-template *ngIf="user">
-  <ion-header>
-    <ion-toolbar>
+<ng-template [ngIf]="user">
+  <ion-content>
+    <ng-template [ngIf]="songs && songs.length != 0">
+      
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>
+            <ng-template [ngIf]="this.authentication.user?.id == this.requestId" [ngIfElse]="notOwner">Votre Galerie</ng-template>
+            <ng-template #notOwner>Galerie de {{ user.username }}</ng-template>
+          </ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <ion-list>
+        <app-song *ngFor="let song of songs" [song]="song"></app-song>
+      </ion-list>
+      <!-- <ion-infinite-scroll (ionInfinite)="onInfiniteScroll($event)">
+        <ion-infinite-scroll-content></ion-infinite-scroll-content>
+      </ion-infinite-scroll> -->
+    </ng-template>
+    <ng-template [ngIf]="songs === null || songs?.length == 0">
       <ion-title>
-        <ng-template [ngIf]="this.authentication.user?.id == this.requestId" [ngIfElse]="notOwner">Votre Gallerie</ng-template>
-        <ng-template #notOwner>Gallerie de {{ user.username }}</ng-template>
+        <h1>
+          <ng-template [ngIf]="this.authentication.user?.id == this.requestId" [ngIfElse]="notOwner">Votre Galerie est vide</ng-template>
+          <ng-template #notOwner>La Galerie de {{ user.username }} est vide</ng-template>
+        </h1>
+        <ion-text>Pour l'instant...</ion-text>
       </ion-title>
-    </ion-toolbar>
-  </ion-header>
-  
-  <ng-template [ngIf]="songs && songs.length != 0" [ngIfElse]="noSongs"> [ngIfElse]="noSongs">
-    <ion-list>
-      <app-song *ngFor="let song of songs" [song]="song"></app-song>
-    </ion-list>
-    <!-- <ion-infinite-scroll (ionInfinite)="onInfiniteScroll($event)">
-      <ion-infinite-scroll-content></ion-infinite-scroll-content>
-    </ion-infinite-scroll> -->
-  </ng-template>
-  <ng-template #noSongs [nfIf]="songs === null">
-    <ion-title>
-      <h1>Il n'y a aucun Utilisateur, pour l'instant...</h1>
-      <ion-text>Vous pouvez nous rejoindre <a [routerLink]="['/authentication']">ici</a>. N'attendez plus!</ion-text>
-    </ion-title>
-  </ng-template>
+    </ng-template>
+  </ion-content>
 </ng-template>

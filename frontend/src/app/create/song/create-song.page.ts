@@ -6,11 +6,11 @@ import { AlertController } from '@ionic/angular';
 import { SongService } from 'src/app/song/song.service';
 
 @Component({
-  selector: 'app-mark',
-  templateUrl: 'mark.page.html',
-  styleUrls: ['mark.page.scss']
+  selector: 'app-create-song',
+  templateUrl: 'create-song.page.html',
+  styleUrls: ['create-song.page.scss']
 })
-export class MarkPage {
+export class CreateSongPage {
 
   publishSongForm: FormGroup = this.formBuilder.group(
     {

@@ -63,13 +63,14 @@ export class SongService {
       }));
   }
 
-  updateSongById(id: number, song: Song): Observable<Song | HttpErrorResponse> {
+  updateSongById(id: number, song: Partial<Song>): Observable<Song | HttpErrorResponse> {
     const formData = new FormData();
-    formData.append('name', song.name);
+    if (song.authorId) formData.append('authorId', song.authorId.toString());
+    if (song.name) formData.append('name', song.name);
 
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-    return this.http.put<Song>(`${environment.host}/api/songs/${id}`, formData, {headers: headers})
+    return this.http.patch<Song>(`${environment.host}/api/songs/${id}`, formData, {headers: headers})
       .pipe(
         catchError((err: HttpErrorResponse) => {
           return of(err);

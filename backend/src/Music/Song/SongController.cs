@@ -53,11 +53,11 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 		};
 
 	/// <summary>
-	/// Get a song by id
+	/// Get songs by their author's id
 	/// </summary>
-	/// <param name="id">The id of the song</param>
+	/// <param name="id">The id of the song author</param>
 	/// <returns>
-	/// The song with the given id
+	/// The playlists with the given author id
 	/// </returns>
 	[HttpGet("byAuthor/{id}")]
 	public async Task<ActionResult<List<Song>>> GetByAuthorId(uint id) =>
@@ -148,30 +148,31 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 	/// <returns>
 	/// The updated song
 	/// </returns>
-	[HttpPut("{id}")]
+	[HttpPatch("{id}")]
 	[Authorize]
-	public async Task<ActionResult<Song>> UpdateSong(uint id, [FromForm] Song song)
+	public async Task<ActionResult<Song>> UpdateSong(uint id, [FromForm] string? name, [FromForm] uint? authorId)
 	{
-		if (song is null)
+		if (name is null && authorId is null)
 		{
 			return BadRequest();
 		}
-
-		Song? current = await repository.Songs.FindAsync(id);
-		if ( current is null )
+		
+		Song? song = await repository.Songs.FindAsync(id);
+		if ( song is null )
 		{
 			return NotFound();
 		}
 
-		if ( ! VerifyOwnershipOrAuthZ(current.AuthorId, ProjectMana.User.Authorizations.EditAnySong, out ActionResult<Song> result) )
+		if ( ! VerifyOwnershipOrAuthZ(song.AuthorId, ProjectMana.User.Authorizations.EditAnySong, out ActionResult<Song> result) )
 		{
 			return result;
 		}
 
-		EntityEntry<Song> updated = repository.Songs.Update( current.WithUpdatesFrom(song) );
+		song.Name = name ?? song.Name;
+		song.AuthorId = authorId ?? song.AuthorId;
 
 		repository.SaveChanges();
-		return Ok(updated);
+		return Ok(song);
 	}
 
 	/// <summary>
