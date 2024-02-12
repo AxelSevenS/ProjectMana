@@ -15,7 +15,6 @@ export class MarkPage {
   publishSongForm: FormGroup = this.formBuilder.group(
     {
       name: ['', Validators.required],
-      description: ['', Validators.required],
       file: [null, Validators.required]
     }
   );
@@ -44,12 +43,11 @@ export class MarkPage {
 
     this.songService.createSong(
       this.publishSongForm.controls['name'].value, 
-      this.publishSongForm.controls['description'].value, 
       this.file
     )
       .subscribe(song => {
         if (song instanceof HttpErrorResponse) return;
-        this.router.navigate(['/song', song.id]);
+        this.router.navigate(['/songs', song.id]);
       })
   }
 }

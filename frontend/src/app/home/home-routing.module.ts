@@ -20,7 +20,7 @@ const routes: Routes = [
         loadChildren: () => import('./search/search-routing.module').then(m => m.SearchRoutingModule),
       },
       {
-        path: 'mark',
+        path: 'create',
         component: MarkPage
       },
     ]

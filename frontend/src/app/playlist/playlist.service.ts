@@ -18,28 +18,28 @@ export class PlaylistService {
   ) { }
 
   getPlaylists(): Observable<Playlist[] | HttpErrorResponse> {
-    return this.http.get<Playlist[]>(`${environment.host}/api/playlist`)
+    return this.http.get<Playlist[]>(`${environment.host}/api/playlists`)
       .pipe( catchError((err: HttpErrorResponse) => {
         return of(err);
       }));
   }
 
   getPlaylistById(id: number): Observable<Playlist | HttpErrorResponse> {
-    return this.http.get<Playlist>(`${environment.host}/api/playlist/${id}`)
+    return this.http.get<Playlist>(`${environment.host}/api/playlists/${id}`)
       .pipe( catchError((err: HttpErrorResponse) => {
         return of(err);
       }));
   }
 
   getPlaylistByPlaylistId(id: number): Observable<Playlist[] | HttpErrorResponse> {
-    return this.http.get<Playlist[]>(`${environment.host}/api/playlist/fromPlaylist/${id}`)
+    return this.http.get<Playlist[]>(`${environment.host}/api/playlists/fromPlaylist/${id}`)
       .pipe( catchError((err: HttpErrorResponse) => {
         return of(err);
       }));
   }
 
   getPlaylistByAuthorId(id: number): Observable<Playlist[] | HttpErrorResponse> {
-    return this.http.get<Playlist[]>(`${environment.host}/api/playlist/byAuthor/${id}`)
+    return this.http.get<Playlist[]>(`${environment.host}/api/playlists/byAuthor/${id}`)
       .pipe( catchError((err: HttpErrorResponse) => {
         return of(err);
       }));
@@ -53,7 +53,7 @@ export class PlaylistService {
 
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}`, 'enctype': 'multipart/form-data' });
 
-    return this.http.put<Playlist>(`${environment.host}/api/playlist`, formData, {headers: headers})
+    return this.http.put<Playlist>(`${environment.host}/api/playlists`, formData, {headers: headers})
       .pipe( catchError((err: HttpErrorResponse) => {
         return of(err);
       }));
@@ -65,7 +65,7 @@ export class PlaylistService {
 
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-    return this.http.put<Playlist>(`${environment.host}/api/playlist/${id}`, formData, {headers: headers})
+    return this.http.put<Playlist>(`${environment.host}/api/playlists/${id}`, formData, {headers: headers})
       .pipe(
         catchError((err: HttpErrorResponse) => {
           return of(err);
@@ -79,7 +79,7 @@ export class PlaylistService {
 
   //   const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-  //   return this.http.put<Playlist>(`${environment.host}/api/playlist/${id}`, formData, {headers: headers})
+  //   return this.http.put<Playlist>(`${environment.host}/api/playlists/${id}`, formData, {headers: headers})
   //     .pipe(
   //       catchError((err: HttpErrorResponse) => {
   //         return of(err);
@@ -92,7 +92,7 @@ export class PlaylistService {
 
   //   const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-  //   return this.http.put<Playlist>(`${environment.host}/api/playlist/${id}`, formData, {headers: headers})
+  //   return this.http.put<Playlist>(`${environment.host}/api/playlists/${id}`, formData, {headers: headers})
   //     .pipe(
   //       catchError((err: HttpErrorResponse) => {
   //         return of(err);
@@ -103,7 +103,7 @@ export class PlaylistService {
   deletePlaylistById(id: number): Observable<Playlist | HttpErrorResponse> {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-    return this.http.delete<Playlist>(`${environment.host}/api/playlist/${id}`, {headers: headers})
+    return this.http.delete<Playlist>(`${environment.host}/api/playlists/${id}`, {headers: headers})
       .pipe(
         catchError((err: HttpErrorResponse) => {
           return of(err);

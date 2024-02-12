@@ -1,4 +1,4 @@
-<ng-template [ngIf]="users" [ngIfElse]="noUsers">
+<ng-template [ngIf]="users && users.length != 0" [ngIfElse]="noUsers">
   <ion-list>
     <app-user *ngFor="let user of users" [user]="user"></app-user>
   </ion-list>
@@ -6,7 +6,7 @@
     <ion-infinite-scroll-content></ion-infinite-scroll-content>
   </ion-infinite-scroll> -->
 </ng-template>
-<ng-template #noUsers>
+<ng-template #noUsers [ngIf]="users === null">
   <ion-title>
     <h1>Il n'y a aucun Utilisateur, pour l'instant...</h1>
     <ion-text>Vous pouvez nous rejoindre <a [routerLink]="['/authentication']">ici</a>. N'attendez plus!</ion-text>

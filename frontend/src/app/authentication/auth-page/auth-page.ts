@@ -14,14 +14,13 @@ import { HttpErrorResponse } from '@angular/common/http';
 export class AuthPage implements OnInit {
 
   loginForm: FormGroup = this.formBuilder.group({
-    email: ['', /* Validators.compose([ */Validators.required/* , Validators.email]) */],
+    username: ['', /* Validators.compose([ */Validators.required/* , Validators.username]) */],
     password: ['', Validators.required],
   });
 
   registerForm: FormGroup = this.formBuilder.group(
     {
-      fullName: ['', Validators.required],
-      email: ['', Validators.compose([Validators.required, Validators.email])],
+      username: ['', /* Validators.compose([ */Validators.required, /* Validators.email]) */],
       password: ['', Validators.compose([Validators.required, AuthenticationValidators.securePasswordValidator])],
       passwordConfirm: ['', Validators.compose([Validators.required, AuthenticationValidators.securePasswordValidator])],
     }, {
@@ -40,7 +39,7 @@ export class AuthPage implements OnInit {
   ngOnInit() {}
 
   login() {
-    this.authenticationService.login(this.loginForm.controls["email"].value, this.loginForm.controls["password"].value)
+    this.authenticationService.login(this.loginForm.controls["username"].value, this.loginForm.controls["password"].value)
       .subscribe(u => {
         if (u instanceof HttpErrorResponse) { return };
 
@@ -50,7 +49,7 @@ export class AuthPage implements OnInit {
   }
 
   register() {
-    this.authenticationService.register(this.registerForm.controls["email"].value, this.registerForm.controls["password"].value)
+    this.authenticationService.register(this.registerForm.controls["username"].value, this.registerForm.controls["password"].value)
       .subscribe(u => {
         if (u instanceof HttpErrorResponse) { return };
 

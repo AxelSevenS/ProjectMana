@@ -50,15 +50,14 @@ export class SongService {
       }));
   }
 
-  createSong(name: string, description: string, file: Blob): Observable<Song | HttpErrorResponse> {
+  createSong(name: string, file: Blob): Observable<Song | HttpErrorResponse> {
     const formData = new FormData();
     formData.append('name', name);
-    formData.append('description', description);
     formData.append('file', file);
 
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}`, 'enctype': 'multipart/form-data' });
 
-    return this.http.put<Song>(`${environment.host}/api/song`, formData, {headers: headers})
+    return this.http.put<Song>(`${environment.host}/api/songs`, formData, {headers: headers})
       .pipe( catchError((err: HttpErrorResponse) => {
         return of(err);
       }));
@@ -70,7 +69,7 @@ export class SongService {
 
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-    return this.http.put<Song>(`${environment.host}/api/song/${id}`, formData, {headers: headers})
+    return this.http.put<Song>(`${environment.host}/api/songs/${id}`, formData, {headers: headers})
       .pipe(
         catchError((err: HttpErrorResponse) => {
           return of(err);
@@ -81,7 +80,7 @@ export class SongService {
   deleteSongById(id: number): Observable<Song | HttpErrorResponse> {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-    return this.http.delete<Song>(`${environment.host}/api/song/${id}`, {headers: headers})
+    return this.http.delete<Song>(`${environment.host}/api/songs/${id}`, {headers: headers})
       .pipe(
         catchError((err: HttpErrorResponse) => {
           return of(err);

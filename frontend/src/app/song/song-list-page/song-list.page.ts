@@ -21,9 +21,11 @@ export class SongListPage implements OnInit {
     this.songService.getSongs()
       .subscribe(songs => {
         this._songs = null;
-        if (songs instanceof HttpErrorResponse) return;
+        if ( ! (songs instanceof HttpErrorResponse)) {
+          this._songs = songs;
+        }
         
-        this._songs = songs;
+        console.log(this._songs);
       });
   }
 

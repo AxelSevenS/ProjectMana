@@ -1,4 +1,4 @@
-<ng-template [ngIf]="songs" [ngIfElse]="noSongs">
+<ng-template [ngIf]="songs && songs.length != 0" [ngIfElse]="noSongs">
   <ion-list>
     <app-song *ngFor="let song of songs" [song]="song"></app-song>
   </ion-list>
@@ -6,7 +6,7 @@
     <ion-infinite-scroll-content></ion-infinite-scroll-content>
   </ion-infinite-scroll> -->
 </ng-template>
-<ng-template #noSongs>
+<ng-template #noSongs [ngIf]="songs === null">
   <ion-title>
     <h1>Il n'y a aucune Chanson disponible, pour l'instant...</h1>
   </ion-title>

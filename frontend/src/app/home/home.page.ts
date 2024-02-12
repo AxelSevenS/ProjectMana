@@ -15,8 +15,8 @@ export class HomePage {
       icon: 'search-circle-outline'
     },
     {
-      path: 'mark',
-      display: 'Mark',
+      path: 'create',
+      display: 'Créer',
       icon: 'pencil-outline'
     }
   ];
