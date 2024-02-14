@@ -4,8 +4,8 @@ import { User, UserAuths } from '../user.model';
 import { UserService } from '../user.service';
 import { AuthenticationService } from 'src/app/authentication/authentication.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AuthenticationValidators } from 'src/app/authentication/authentication-utility';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-user-page',
@@ -42,8 +42,10 @@ export class UserPage {
   
   ngOnInit(): void {
     this.userService.getUserById(this.requestId)
+      .pipe(first())
       .subscribe(user => {
         if (user instanceof HttpErrorResponse) return;
+
         this._user = user;
         this._auths = this.userService.getAuths(this._user.roles);
 
@@ -62,6 +64,7 @@ export class UserPage {
     };
 
     this.userService.updateUserById(this.requestId, updated)
+      .pipe(first())
       .subscribe(res => {
         if (res && this.requestId == this.authentication.user?.id && this.user?.username != updated.username) {
           this.authentication.logout();

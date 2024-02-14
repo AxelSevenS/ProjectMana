@@ -7,6 +7,7 @@ import { Song } from '../song.model';
 import { AlertController } from '@ionic/angular';
 import { SafeUrl } from '@angular/platform-browser';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-song-page',
@@ -45,6 +46,7 @@ export class SongPage {
   
   ngOnInit(): void {
     this._songService.getSongById(this.requestId)
+      .pipe(first())
       .subscribe(song => {
         this._song = null;
         if (song instanceof HttpErrorResponse) return;
@@ -62,16 +64,14 @@ export class SongPage {
     this.song.name = this.editSongForm.controls['name'].value;
     let updated: Song = this.song;
 
-    this.songService.updateSongById(this.song.id, updated)
-      .subscribe(res => {
-        console.log(res);
-      });
+    this.songService.updateSongById(this.song.id, updated);
   }
 
   async delete() {
     if( ! this.song ) return;
 
     this._songService.deleteSongById(this.song.id)
+      .pipe(first())
       .subscribe(async res => {
         if (res) {
           this.router.navigate(['']);

@@ -23,6 +23,17 @@
           <ion-icon slot="start" name="eye-outline"></ion-icon>
           Afficher
         </ion-button>
+        <ion-button *ngIf="playlistService.userPlaylists" [id]="'song-playlist-'+song.id+'-'+optionId" expand="block">
+          <ion-icon slot="start" name="list-outline"></ion-icon>
+          Ajouter à une Playlist
+        </ion-button>
+        <ion-popover *ngIf="playlistService.userPlaylists" [trigger]="'song-playlist-'+song.id+'-'+optionId" triggerAction="click" side="left">
+          <ng-template>
+            <ion-text *ngFor="let playlist of playlistService.userPlaylists">
+              <ion-checkbox [checked]="playlistContainsSong(playlist, song.id)" (click)="togglePlaylist($event, playlist.id)" labelPlacement="end">{{ playlist.name }}</ion-checkbox>
+            </ion-text>
+          </ng-template>
+        </ion-popover>
         <ion-button *ngIf="this.authentication.user?.id == song.authorId || this.authentication.auths.SongDeleter" (click)="delete()" color="danger" expand="block">
           <ion-icon slot="start" name="trash-outline"></ion-icon>
           Supprimer

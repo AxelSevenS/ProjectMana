@@ -8,6 +8,7 @@ import { AlertController } from '@ionic/angular';
 import { SafeUrl } from '@angular/platform-browser';
 import { HttpErrorResponse } from '@angular/common/http';
 import { UserService } from 'src/app/user/user.service';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-playlist-page',
@@ -44,6 +45,7 @@ export class PlaylistPage {
   
   ngOnInit(): void {
     this._playlistService.getPlaylistById(this.requestId)
+      .pipe(first())
       .subscribe(playlist => {
         if ( playlist instanceof HttpErrorResponse ) return;
         this._playlist = playlist;
@@ -66,6 +68,7 @@ export class PlaylistPage {
     if( ! this.playlist ) return;
 
     this._playlistService.deletePlaylistById(this.playlist.id)
+      .pipe(first())
       .subscribe(async res => {
         if (res instanceof HttpErrorResponse) {
           const alert = await this.alertController.create({

@@ -4,6 +4,9 @@ import { Song } from '../song.model';
 import { AuthenticationService } from 'src/app/authentication/authentication.service';
 import { AlertController } from '@ionic/angular';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
+import { PlaylistService } from 'src/app/playlist/playlist.service';
+import { Playlist } from 'src/app/playlist/playlist.model';
 
 @Component({
   selector: 'app-song',
@@ -20,6 +23,7 @@ export class SongComponent implements OnInit {
   private _optionId = new Date().getTime().toString();
 
   public get authentication() { return this._authentication }
+  public get playlistService() { return this._playlistService }
 
   public get fileUrl() { return this._fileUrl }
   private _fileUrl?: string | null;
@@ -30,18 +34,22 @@ export class SongComponent implements OnInit {
   constructor(
     private _authentication: AuthenticationService,
     private songService: SongService,
+    private _playlistService: PlaylistService,
     private alertController: AlertController
   ) { }
 
   ngOnInit() {
     if (this.id && ! this.song) {
       this.songService.getSongById(this.id)
+        .pipe(first())
         .subscribe(song => {
           if (song instanceof HttpErrorResponse) return;
+
           this.song = song;
           this._fileUrl = this.songService.getSongFileUrl(this.song);
         })
     } else if (! this.id && this.song) {
+
       this.id = this.song.id;
       this._fileUrl = this.songService.getSongFileUrl(this.song);
     }
@@ -54,6 +62,7 @@ export class SongComponent implements OnInit {
     if( ! this.song ) return;
 
     this.songService.deleteSongById(this.song.id)
+      .pipe(first())
       .subscribe(async res => {
         if (res) {
           this.song = undefined;
@@ -68,6 +77,16 @@ export class SongComponent implements OnInit {
     
         await alert.present();
       });
+  }
+
+  togglePlaylist(e: any, id: number) {
+    console.log(e.target.checked, id);
+  }
+
+  playlistContainsSong(playlist: Playlist, songId: number) {
+    let res = playlist.songs.find(s => this.song && s.id === this.song.id) !== undefined;
+    console.log(res);
+    return res;
   }
 
 }

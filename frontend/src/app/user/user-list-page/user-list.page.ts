@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { User } from '../user.model';
 import { UserService } from '../user.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-user-list',
@@ -19,6 +20,7 @@ export class UserListPage implements OnInit {
   
   ngOnInit(): void {
     this.userService.getUsers()
+      .pipe(first())
       .subscribe(users => {
         this._users = null;
         if (users instanceof HttpErrorResponse) return;

@@ -6,6 +6,7 @@ import { AuthenticationService } from 'src/app/authentication/authentication.ser
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthenticationValidators } from 'src/app/authentication/authentication-utility';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-password-edit',
@@ -52,11 +53,13 @@ export class PasswordEditPage {
     };
 
     this.userService.updateUserById(this.authentication.user.id, user)
+      .pipe(first())
       .subscribe(res => {
         if (res) {
           if (res instanceof HttpErrorResponse) return;
 
           this.authentication.login(res.username, user.password)
+            .pipe(first())
             .subscribe(() => {
               window.location.reload();
             });

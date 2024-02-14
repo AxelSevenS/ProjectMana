@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
+import { first } from 'rxjs';
 import { PlaylistService } from 'src/app/playlist/playlist.service';
 
 @Component({
@@ -36,8 +37,10 @@ export class CreatePlaylistPage {
     this.playlistService.createPlaylist(
       this.publishPlaylistForm.controls['name'].value, 
     )
+      .pipe(first())
       .subscribe(playlist => {
         if (playlist instanceof HttpErrorResponse) return;
+        
         this.router.navigate(['/playlists', playlist.id]);
       })
   }

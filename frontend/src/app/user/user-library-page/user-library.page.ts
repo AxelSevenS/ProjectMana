@@ -6,6 +6,7 @@ import { Song } from 'src/app/song/song.model';
 import { SongService } from 'src/app/song/song.service';
 import { UserService } from '../user.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-user-library',
@@ -34,6 +35,7 @@ export class UserLibraryPage implements OnInit {
   
   ngOnInit(): void {
     this.userService.getUserById(this.requestId)
+      .pipe(first())
       .subscribe(user => {
         this._user = null;
         if (user instanceof HttpErrorResponse) return;
@@ -41,6 +43,7 @@ export class UserLibraryPage implements OnInit {
         this._user = user;
       })
     this.songService.getSongsByAuthorId(this.requestId)
+      .pipe(first())
       .subscribe(songs => {
         this._songs = null;
         if (songs instanceof HttpErrorResponse) return;
