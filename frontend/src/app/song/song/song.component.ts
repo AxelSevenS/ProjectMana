@@ -7,6 +7,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { first } from 'rxjs';
 import { PlaylistService } from 'src/app/playlist/playlist.service';
 import { Playlist } from 'src/app/playlist/playlist.model';
+import { PlaylistListPage } from 'src/app/playlist/playlist-list-page/playlist-list.page';
 
 @Component({
   selector: 'app-song',
@@ -46,9 +47,18 @@ export class SongComponent implements OnInit {
           this._fileUrl = this.songService.getSongFileUrl(this.song);
         })
     } else if (! this.id && this.song) {
-
       this.id = this.song.id;
       this._fileUrl = this.songService.getSongFileUrl(this.song);
+    }
+
+    if ( ! this._playlistService.userPlaylists && this._authentication.user ) {
+      this._playlistService.userPlaylists = [];
+      this._playlistService.getPlaylistByAuthorId(this._authentication.user.id)
+        .pipe(first())
+        .subscribe(playlists => {
+          if (playlists instanceof HttpErrorResponse) return;
+          this._playlistService.userPlaylists = playlists;
+        })
     }
   }
 
@@ -58,18 +68,18 @@ export class SongComponent implements OnInit {
     this.songService.deleteSongById(this.song.id)
       .pipe(first())
       .subscribe(async res => {
-        if (res) {
-          this.song = undefined;
+        if (res instanceof HttpErrorResponse) {
+          const alert = await this.alertController.create({
+            header: 'Erreur lors de la Suppression du Média',
+            message: 'La suppression du Média a échoué',
+            buttons: ['Ok'],
+          });
+          
+          await alert.present();
           return;
         }
-
-        const alert = await this.alertController.create({
-          header: 'Erreur lors de la Suppression du Média',
-          message: 'La suppression du Média a échoué',
-          buttons: ['Ok'],
-        });
-    
-        await alert.present();
+        
+        this.song = undefined;
       });
   }
 
@@ -86,29 +96,35 @@ export class SongComponent implements OnInit {
             return;
           }
           
-          let index = this.playlistService.userPlaylists?.findIndex(p => p.id == playlist.id) ?? -1;
+          let index = this._playlistService.userPlaylists?.findIndex(p => p.id == playlist.id) ?? -1;
+          console.log(index);
           if (index != -1) {
-            this.playlistService.userPlaylists![index] = playlist;
+            this._playlistService.userPlaylists![index] = res;
           }
+
+          console.log(this._playlistService.userPlaylists);
         })
-    } else {
-      this.playlistService.removeSongById(playlist.id, this.song!.id)
+      } else {
+        this.playlistService.removeSongById(playlist.id, this.song!.id)
         .pipe(first())
         .subscribe(res => {
           if (res instanceof HttpErrorResponse) {
             e.target.checked = !isChecked;
             return;
           }
-
-          let index = this.playlistService.userPlaylists?.findIndex(p => p.id == playlist.id) ?? -1;
+          
+          let index = this._playlistService.userPlaylists?.findIndex(p => p.id == playlist.id) ?? -1;
+          console.log(index);
           if (index != -1) {
-            this.playlistService.userPlaylists![index] = playlist;
+            this._playlistService.userPlaylists![index] = res;
           }
+
+          console.log(this._playlistService.userPlaylists);
         })
     }
   }
 
-  playlistContainsSong(playlist: Playlist, songId: number) {
+  playlistContainsSong(playlist: Playlist) {
     return playlist.songs.find(s => this.song && s.id === this.song.id) !== undefined;
   }
 

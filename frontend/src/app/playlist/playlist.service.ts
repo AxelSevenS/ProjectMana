@@ -15,24 +15,22 @@ export class PlaylistService {
 
   private updateEvent = new Subject<Playlist>();
 
-  public get userPlaylists() { return this._userPlaylists };
-  private _userPlaylists?: Playlist[] | null;
+  public userPlaylists?: Playlist[] | null;
 
   constructor(
     private authentication: AuthenticationService,
     private http: HttpClient
   ) {
-    if (! this._userPlaylists && this.authentication.user) {
+    if (! this.userPlaylists && this.authentication.user) {
       this.getPlaylistByAuthorId(this.authentication.user.id)
         .pipe(first())
         .subscribe(res => {
-          console.log(res);
           if (res instanceof HttpErrorResponse) {
-            this._userPlaylists = null;
+            this.userPlaylists = null;
             return;
           };
   
-          this._userPlaylists = res;
+          this.userPlaylists = res;
         })
     }
   }
