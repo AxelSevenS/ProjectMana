@@ -28,7 +28,7 @@
           </ion-button>
           <ion-popover *ngIf="userPlaylists.playlists" [trigger]="'song-playlist-'+song.id+'-'+optionId" triggerAction="click" side="left">
             <ng-template>
-              <ion-text *ngFor="let playlist of userPlaylists.sortedPlaylists">
+              <ion-text *ngFor="let playlist of userPlaylists.playlists">
                 <ion-checkbox [checked]="playlistContainsSong(playlist)" (click)="togglePlaylist($event, playlist)" labelPlacement="end">{{ playlist.name }}</ion-checkbox>
               </ion-text>
             </ng-template>

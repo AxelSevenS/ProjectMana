@@ -25,7 +25,6 @@ export class UserComponent implements OnInit {
   ngOnInit() {
     if (this.id && ! this.user) {
       this.userService.getUserById(this.id)
-        .pipe(first())
         .subscribe(user => {
           if (user instanceof HttpErrorResponse) return;
 

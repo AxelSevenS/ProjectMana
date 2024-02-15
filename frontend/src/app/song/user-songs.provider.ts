@@ -10,23 +10,43 @@ import { AuthenticationService } from "../authentication/authentication.service"
 })
 export class UserSongsProvider {
 
-	public songs?: Song[] | null;
+	public get songs() { return this._songs };
+	public _songs?: Song[] | null;
 
 	constructor(
 		private _authentication: AuthenticationService,
 		private _songService: SongService
 	) {
-		if (this._authentication.user && ! this.songs) {
+		if (this._authentication.user && ! this._songs) {
 		  this._songService.getSongsByAuthorId(this._authentication.user.id)
-			.pipe(first())
 			.subscribe(res => {
 			  if (res instanceof HttpErrorResponse) {
-				this.songs = null;
+				this._songs = null;
 				return;
 			  };
 	  
-			  this.songs = res;
+			  this._songs = res;
 			})
 		}
+		
+		this._songService.eventAdded
+			.subscribe(song => {
+				if (song.authorId != this._authentication.user?.id) return;
+				this._songs?.push(song);
+			});
+
+		this._songService.eventRemoved
+			.subscribe(song => {
+				if ( ! this._songs || song.authorId != this._authentication.user?.id ) return;
+				let index = this._songs?.findIndex(s => s.id == song.id);
+				this._songs?.splice(index, 1);
+			});
+
+		this._songService.eventUpdated
+			.subscribe(song => {
+				if ( ! this._songs || song.authorId != this._authentication.user?.id ) return;
+				let index = this._songs?.findIndex(s => s.id == song.id);
+				this._songs?.splice(index, 1, song);
+			});
 	}
 }

@@ -20,7 +20,6 @@ export class UserListComponent implements OnInit {
   
   ngOnInit(): void {
     this.userService.getUsers()
-      .pipe(first())
       .subscribe(users => {
         this._users = null;
         if (users instanceof HttpErrorResponse) return;

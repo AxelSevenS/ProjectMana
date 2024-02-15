@@ -21,7 +21,6 @@ import { PasswordEditPage } from './password-edit-page/password-edit.page';
     SongModule,
     ReactiveFormsModule,
   ],
-  providers: [UserService],
   declarations: [UserListComponent, UserLibraryPage, UserPage, UserComponent, PasswordEditPage],
   exports: [UserListComponent, UserComponent]
 })

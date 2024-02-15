@@ -40,7 +40,6 @@ export class SongComponent implements OnInit {
   ngOnInit() {
     if (this.id && ! this.song) {
       this.songService.getSongById(this.id)
-        .pipe(first())
         .subscribe(song => {
           if (song instanceof HttpErrorResponse) return;
 
@@ -51,13 +50,24 @@ export class SongComponent implements OnInit {
       this.id = this.song.id;
       this._fileUrl = this.songService.getSongFileUrl(this.song);
     }
+
+		this.songService.eventRemoved
+			.subscribe(song => {
+				if ( this.song?.id != song.id ) return;
+        this.song = null;
+			});
+			
+    this.songService.eventUpdated
+			.subscribe(song => {
+        if ( this.song?.id != song.id ) return;
+        this.song = song;
+			});
   }
 
   async delete() {
     if( ! this.song ) return;
 
     this.songService.deleteSongById(this.song.id)
-      .pipe(first())
       .subscribe(async res => {
         if (res instanceof HttpErrorResponse) {
           const alert = await this.alertController.create({
@@ -69,8 +79,6 @@ export class SongComponent implements OnInit {
           await alert.present();
           return;
         }
-        
-        this.song = undefined;
       });
   }
 
@@ -79,35 +87,21 @@ export class SongComponent implements OnInit {
     let isChecked: boolean = ! e.target.checked;
 
     if (isChecked) {
-      this._playlistService.AddSongById(playlist.id, this.song!.id)
-        .pipe(first())
+      this._playlistService.addSongById(playlist.id, this.song!.id)
         .subscribe(res => {
           if (res instanceof HttpErrorResponse) {
             e.target.checked = !isChecked;
             return;
           }
-          if ( ! this._userPlaylists.playlists ) return;
-          
-          let index = this._userPlaylists.playlists.findIndex(p => p.id == playlist.id);
-          if (index != -1) {
-            this._userPlaylists.playlists[index].songs = res.songs;
-          }
-        })
-      } else {
-        this._playlistService.removeSongById(playlist.id, this.song!.id)
-        .pipe(first())
+        });
+    } else {
+      this._playlistService.removeSongById(playlist.id, this.song!.id)
         .subscribe(res => {
           if (res instanceof HttpErrorResponse) {
             e.target.checked = !isChecked;
             return;
           }
-          if ( ! this._userPlaylists.playlists ) return;
-          
-          let index = this._userPlaylists.playlists.findIndex(p => p.id == playlist.id);
-          if (index != -1) {
-            this._userPlaylists.playlists[index].songs = res.songs;
-          }
-        })
+        });
     }
   }
 

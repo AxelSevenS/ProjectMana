@@ -53,13 +53,11 @@ export class PasswordEditPage {
     };
 
     this.userService.updateUserById(this.authentication.user.id, user)
-      .pipe(first())
       .subscribe(res => {
         if (res) {
           if (res instanceof HttpErrorResponse) return;
 
           this.authentication.login(res.username, user.password)
-            .pipe(first())
             .subscribe(() => {
               window.location.reload();
             });

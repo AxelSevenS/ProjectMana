@@ -46,7 +46,6 @@ export class SongPage {
   
   ngOnInit(): void {
     this._songService.getSongById(this.requestId)
-      .pipe(first())
       .subscribe(song => {
         this._song = null;
         if (song instanceof HttpErrorResponse) return;
@@ -54,6 +53,18 @@ export class SongPage {
         this._song = song;
         this._fileUrl = this.songService.getSongFileUrl(this._song);
         this.editSongForm.controls['name'].setValue(song?.name);
+      });
+
+    this._songService.eventRemoved
+      .subscribe(song => {
+        if (this._song?.id != song.id) return;
+        this._song = null;
+      });
+      
+      this._songService.eventUpdated
+      .subscribe(song => {
+        if (this._song?.id != song.id) return;
+        this._song = song;
       });
   }
 
@@ -71,7 +82,6 @@ export class SongPage {
     if( ! this.song ) return;
 
     this._songService.deleteSongById(this.song.id)
-      .pipe(first())
       .subscribe(async res => {
         if (res) {
           this.router.navigate(['']);

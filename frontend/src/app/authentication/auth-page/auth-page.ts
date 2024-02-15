@@ -41,7 +41,6 @@ export class AuthPage implements OnInit {
 
   login() {
     this.authenticationService.login(this.loginForm.controls["username"].value, this.loginForm.controls["password"].value)
-      .pipe(first())
       .subscribe(u => {
         if (u instanceof HttpErrorResponse) return;
 
@@ -54,12 +53,10 @@ export class AuthPage implements OnInit {
     let username = this.registerForm.controls["username"].value;
     let password = this.registerForm.controls["password"].value;
     this.authenticationService.register(username, password)
-      .pipe(first())
       .subscribe(u => {
         if (u instanceof HttpErrorResponse) { return };
 
         this.authenticationService.login(username, password)
-          .pipe(first())
           .subscribe(() => {
             this.router.navigate([''])
               .then(() => window.location.reload())

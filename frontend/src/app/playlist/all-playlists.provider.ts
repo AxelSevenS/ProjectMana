@@ -9,15 +9,34 @@ import { HttpErrorResponse } from "@angular/common/http";
 })
 export class AllPlaylistsProvider {
 
-	public playlists?: Playlist[] | null;
+	public get playlists() { return this._playlists };
+	private _playlists?: Playlist[] | null;
 
 	constructor(
 		private _playlistService: PlaylistService
 	) {
 		this._playlistService.getPlaylists()
-		  .pipe(first())
 		  .subscribe(playlist => {
-			this.playlists = playlist instanceof HttpErrorResponse ? null : playlist;
+				this._playlists = playlist instanceof HttpErrorResponse ? null : playlist;
 		  });
+		
+		this._playlistService.eventAdded
+			.subscribe(playlist => {
+				this._playlists?.push(playlist);
+			});
+
+		this._playlistService.eventRemoved
+			.subscribe(playlist => {
+				if ( ! this._playlists ) return;
+				let index = this._playlists?.findIndex(s => s.id == playlist.id);
+				this._playlists?.splice(index, 1);
+			});
+			  
+		this._playlistService.eventUpdated
+		.subscribe(playlist => {
+			if ( ! this._playlists ) return;
+			let index = this._playlists?.findIndex(s => s.id == playlist.id);
+			this._playlists?.splice(index, 1, playlist);
+		});
 	}
 }

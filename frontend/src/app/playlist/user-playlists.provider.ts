@@ -10,8 +10,8 @@ import { AuthenticationService } from "../authentication/authentication.service"
 })
 export class UserPlaylistsProvider {
 
-	public get sortedPlaylists() { return this.playlists?.sort((p1,p2) => p1.id - p2.id) };
-	public playlists?: Playlist[] | null;
+	public get playlists() { return this._playlists };
+	private _playlists?: Playlist[] | null;
 
 	constructor(
 		private _authentication: AuthenticationService,
@@ -19,15 +19,34 @@ export class UserPlaylistsProvider {
 	) {
 		if (this._authentication.user && ! this.playlists) {
 		  this._playlistService.getPlaylistsByAuthorId(this._authentication.user.id)
-			.pipe(first())
 			.subscribe(res => {
 			  if (res instanceof HttpErrorResponse) {
-				this.playlists = null;
+				this._playlists = null;
 				return;
 			  };
 	  
-			  this.playlists = res;
+			  this._playlists = res;
 			})
 		}
+		
+		this._playlistService.eventAdded
+			.subscribe(playlist => {
+				if (playlist.authorId != this._authentication.user?.id) return;
+				this._playlists?.push(playlist);
+			});
+
+		this._playlistService.eventRemoved
+			.subscribe(playlist => {
+				if ( ! this._playlists || playlist.authorId != this._authentication.user?.id ) return;
+				let index = this._playlists?.findIndex(s => s.id == playlist.id);
+				this._playlists?.splice(index, 1);
+			});
+
+		this._playlistService.eventUpdated
+			.subscribe(playlist => {
+				if ( ! this._playlists || playlist.authorId != this._authentication.user?.id ) return;
+				let index = this._playlists?.findIndex(s => s.id == playlist.id);
+				this._playlists?.splice(index, 1, playlist);
+			});
 	}
 }

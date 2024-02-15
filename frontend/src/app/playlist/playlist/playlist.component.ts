@@ -31,8 +31,6 @@ export class PlaylistComponent implements OnInit {
   private _mimeType: string | null = null;
 
   constructor(
-    private router: Router,
-    private userService: UserService,
     private _authentication: AuthenticationService,
     private playlistService: PlaylistService,
     private alertController: AlertController
@@ -41,7 +39,6 @@ export class PlaylistComponent implements OnInit {
   ngOnInit() {
     if (this.id && ! this.playlist) {
       this.playlistService.getPlaylistById(this.id)
-        .pipe(first())
         .subscribe(playlist => {
           if (playlist instanceof HttpErrorResponse) return;
 
@@ -50,13 +47,26 @@ export class PlaylistComponent implements OnInit {
     } else if (! this.id && this.playlist) {
       this.id = this.playlist.id;
     }
+
+    this.playlistService.eventRemoved
+      .subscribe(playlist => {
+        console.log("removed", playlist);
+        if (this.playlist?.id != playlist.id) return;
+        this.playlist = null;
+      });
+      
+    this.playlistService.eventUpdated
+    .subscribe(playlist => {
+        console.log("updated", playlist);
+        if (this.playlist?.id != playlist.id) return;
+        this.playlist = playlist;
+      });
   }
 
   async delete() {
     if( ! this.playlist ) return;
 
     this.playlistService.deletePlaylistById(this.playlist.id)
-      .pipe(first())
       .subscribe(async res => {
         if (res instanceof HttpErrorResponse) {
           const alert = await this.alertController.create({
@@ -68,8 +78,6 @@ export class PlaylistComponent implements OnInit {
           await alert.present();
           return;
         }
-
-        this.playlist = undefined;
       });
     }
 

@@ -40,18 +40,28 @@ export class PlaylistPage {
     private formBuilder: FormBuilder,
     private activatedRoute: ActivatedRoute,
     private _playlistService: PlaylistService,
-    private _songService: SongService,
     private _authentication: AuthenticationService,
   ) {}
   
   ngOnInit(): void {
     this._playlistService.getPlaylistById(this.requestId)
-      .pipe(first())
       .subscribe(playlist => {
         if ( playlist instanceof HttpErrorResponse ) return;
         this._playlist = playlist;
 
         this.editPlaylistForm.controls['name'].setValue(playlist?.name);
+      });
+
+    this._playlistService.eventRemoved
+      .subscribe(playlist => {
+        if (this._playlist?.id != playlist.id) return;
+        this._playlist = null;
+      });
+      
+    this._playlistService.eventUpdated
+      .subscribe(playlist => {
+        if (this._playlist?.id != playlist.id) return;
+        this._playlist = playlist;
       });
   }
 
@@ -69,7 +79,6 @@ export class PlaylistPage {
     if( ! this.playlist ) return;
 
     this._playlistService.deletePlaylistById(this.playlist.id)
-      .pipe(first())
       .subscribe(async res => {
         if (res instanceof HttpErrorResponse) {
           const alert = await this.alertController.create({

@@ -42,7 +42,6 @@ export class UserPage {
   
   ngOnInit(): void {
     this.userService.getUserById(this.requestId)
-      .pipe(first())
       .subscribe(user => {
         if (user instanceof HttpErrorResponse) return;
 
@@ -64,7 +63,6 @@ export class UserPage {
     };
 
     this.userService.updateUserById(this.requestId, updated)
-      .pipe(first())
       .subscribe(res => {
         if (res && this.requestId == this.authentication.user?.id && this.user?.username != updated.username) {
           this.authentication.logout();

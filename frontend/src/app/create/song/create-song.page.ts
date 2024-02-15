@@ -46,7 +46,6 @@ export class CreateSongPage {
       this.publishSongForm.controls['name'].value, 
       this.file
     )
-      .pipe(first())
       .subscribe(song => {
         if (song instanceof HttpErrorResponse) return;
         

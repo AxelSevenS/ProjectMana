@@ -35,7 +35,6 @@ export class UserLibraryPage implements OnInit {
   
   ngOnInit(): void {
     this.userService.getUserById(this.requestId)
-      .pipe(first())
       .subscribe(user => {
         this._user = null;
         if (user instanceof HttpErrorResponse) return;
@@ -43,7 +42,6 @@ export class UserLibraryPage implements OnInit {
         this._user = user;
       })
     this.songService.getSongsByAuthorId(this.requestId)
-      .pipe(first())
       .subscribe(songs => {
         this._songs = null;
         if (songs instanceof HttpErrorResponse) return;

@@ -11,7 +11,6 @@ import { AuthenticationService } from './authentication/authentication.service';
 import { NotFoundPage } from './not-found/not-found.page';
 
 @NgModule({
-  declarations: [AppComponent, NotFoundPage],
   imports: [
     BrowserModule,
     HttpClientModule,
@@ -22,12 +21,11 @@ import { NotFoundPage } from './not-found/not-found.page';
   ],
   providers: [
     Storage,
-    HttpClient,
-    AuthenticationService,
     { 
       provide: RouteReuseStrategy, 
       useClass: IonicRouteStrategy
     }
-  ]
+  ],
+  declarations: [AppComponent, NotFoundPage],
 })
 export class AppModule {}

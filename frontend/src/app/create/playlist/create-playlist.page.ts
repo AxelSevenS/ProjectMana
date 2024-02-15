@@ -37,7 +37,6 @@ export class CreatePlaylistPage {
     this.playlistService.createPlaylist(
       this.publishPlaylistForm.controls['name'].value, 
     )
-      .pipe(first())
       .subscribe(playlist => {
         if (playlist instanceof HttpErrorResponse) return;
         
