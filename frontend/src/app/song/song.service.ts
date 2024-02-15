@@ -14,9 +14,9 @@ export declare type AuthenticationState = 'loggedIn' | 'loggedOut' | 'disconnect
 export class SongService {
 
   constructor(
-    private authentication: AuthenticationService,
     private http: HttpClient
-  ) { }
+  ) {}
+  
 
   getSongFileUrl(song: Song): string {
     return `${environment.host}/api/songs/file/${song.id}`;

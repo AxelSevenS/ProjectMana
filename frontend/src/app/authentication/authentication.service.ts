@@ -91,7 +91,11 @@ export class AuthenticationService {
     this._user = null;
     this._state = 'loggedOut';
     localStorage.removeItem(AuthenticationService.storageKey);
-    this.router.navigate(['']);
+    
+    this.router.navigate([''])
+      .then(() => {
+        window.location.reload();
+      });
   }
 
   private jwtToUser(token: string): User | null {

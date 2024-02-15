@@ -1,44 +1,45 @@
 <ion-item *ngIf="song && fileUrl">
-  <!-- <ion-row> -->
-    <ion-col size="5">
-      <audio controls [src]="fileUrl"></audio>
-    </ion-col>
-    
-    <ion-col>
-      <ion-card>
-        <ion-card-header>
-          <ion-card-title>{{ song.name }}</ion-card-title>
-          <ion-card-subtitle>ID: {{ song.id }}</ion-card-subtitle>
-        </ion-card-header>
-        
-        <ion-card-content>
-        </ion-card-content>
-      </ion-card>
-    </ion-col>
+  <ion-grid>
+    <ion-row class="ion-align-items-center">
 
-    <ion-button [id]="'song-options-'+song.id+'-'+optionId" shape="circle"><ion-icon name="chevron-down-outline"></ion-icon></ion-button>
-    <ion-popover [trigger]="'song-options-'+song.id+'-'+optionId" triggerAction="click">
-      <ng-template>
-        <ion-button [routerLink]="['/songs', song.id]" expand="block">
-          <ion-icon slot="start" name="eye-outline"></ion-icon>
-          Afficher
-        </ion-button>
-        <ion-button *ngIf="playlistService.userPlaylists" [id]="'song-playlist-'+song.id+'-'+optionId" expand="block">
-          <ion-icon slot="start" name="list-outline"></ion-icon>
-          Ajouter à une Playlist
-        </ion-button>
-        <ion-popover *ngIf="playlistService.userPlaylists" [trigger]="'song-playlist-'+song.id+'-'+optionId" triggerAction="click" side="left">
-          <ng-template>
-            <ion-text *ngFor="let playlist of playlistService.userPlaylists">
-              <ion-checkbox [checked]="playlistContainsSong(playlist)" (click)="togglePlaylist($event, playlist)" labelPlacement="end">{{ playlist.name }}</ion-checkbox>
-            </ion-text>
-          </ng-template>
-        </ion-popover>
-        <ion-button *ngIf="this.authentication.user?.id == song.authorId || this.authentication.auths.SongDeleter" (click)="delete()" color="danger" expand="block">
-          <ion-icon slot="start" name="trash-outline"></ion-icon>
-          Supprimer
-        </ion-button>
-      </ng-template>
-    </ion-popover>
-  <!-- </ion-row> -->
+      <ion-col size="5">
+        <audio controls [src]="fileUrl"></audio>
+      </ion-col>
+      
+      <ion-col>
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>{{ song.name }}</ion-card-title>
+            <ion-card-subtitle>ID: {{ song.id }}</ion-card-subtitle>
+          </ion-card-header>
+        </ion-card>
+      </ion-col>
+
+      <ion-button [id]="'song-options-'+song.id+'-'+optionId" shape="circle"><ion-icon name="chevron-down-outline"></ion-icon></ion-button>
+      <ion-popover [trigger]="'song-options-'+song.id+'-'+optionId" triggerAction="click">
+        <ng-template>
+          <ion-button [routerLink]="['/songs', song.id]" expand="block">
+            <ion-icon slot="start" name="eye-outline"></ion-icon>
+            Afficher
+          </ion-button>
+          <ion-button *ngIf="userPlaylists.playlists" [id]="'song-playlist-'+song.id+'-'+optionId" expand="block">
+            <ion-icon slot="start" name="list-outline"></ion-icon>
+            Ajouter à une Playlist
+          </ion-button>
+          <ion-popover *ngIf="userPlaylists.playlists" [trigger]="'song-playlist-'+song.id+'-'+optionId" triggerAction="click" side="left">
+            <ng-template>
+              <ion-text *ngFor="let playlist of userPlaylists.sortedPlaylists">
+                <ion-checkbox [checked]="playlistContainsSong(playlist)" (click)="togglePlaylist($event, playlist)" labelPlacement="end">{{ playlist.name }}</ion-checkbox>
+              </ion-text>
+            </ng-template>
+          </ion-popover>
+          <ion-button *ngIf="this.authentication.user?.id == song.authorId || this.authentication.auths.SongDeleter" (click)="delete()" color="danger" expand="block">
+            <ion-icon slot="start" name="trash-outline"></ion-icon>
+            Supprimer
+          </ion-button>
+        </ng-template>
+      </ion-popover>
+
+    </ion-row>
+  </ion-grid>
 </ion-item>

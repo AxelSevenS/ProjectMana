@@ -1,0 +1,15 @@
+<ng-template [ngIf]="playlistProvider.playlists && playlistProvider.playlists.length != 0">
+  <ion-list>
+    <app-playlist *ngFor="let playlist of playlistProvider.playlists" [playlist]="playlist"></app-playlist>
+  </ion-list>
+  <!-- <ion-infinite-scroll (ionInfinite)="onInfiniteScroll($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll> -->
+</ng-template>
+
+<ng-template [ngIf]="playlistProvider.playlists === null || playlistProvider.playlists?.length == 0">
+  <ion-title>
+    <h1>Il n'y a aucun Playlist disponible</h1>
+    <ion-text>pour l'instant...</ion-text>
+  </ion-title>
+</ng-template>

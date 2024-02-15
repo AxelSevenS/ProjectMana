@@ -68,8 +68,8 @@ export class PlaylistComponent implements OnInit {
           await alert.present();
           return;
         }
-        
-        this.router.navigate(['']);
+
+        this.playlist = undefined;
       });
     }
 

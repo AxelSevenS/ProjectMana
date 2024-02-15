@@ -9,6 +9,8 @@ import { SafeUrl } from '@angular/platform-browser';
 import { HttpErrorResponse } from '@angular/common/http';
 import { UserService } from 'src/app/user/user.service';
 import { first } from 'rxjs';
+import { AllPlaylistsProvider } from '../all-playlists.provider';
+import { SongService } from 'src/app/song/song.service';
 
 @Component({
   selector: 'app-playlist-page',
@@ -24,7 +26,6 @@ export class PlaylistPage {
   );
 
   public get authentication() { return this._authentication }
-  public get playlistService() { return this._playlistService }
 
   public get requestId() { return this.activatedRoute.snapshot.params['id'] }
 
@@ -39,8 +40,8 @@ export class PlaylistPage {
     private formBuilder: FormBuilder,
     private activatedRoute: ActivatedRoute,
     private _playlistService: PlaylistService,
+    private _songService: SongService,
     private _authentication: AuthenticationService,
-    private userService: UserService,
   ) {}
   
   ngOnInit(): void {
@@ -61,7 +62,7 @@ export class PlaylistPage {
     let updated: Playlist = this.playlist;
     this.playlist.name = this.editPlaylistForm.controls['name'].value;
 
-    this.playlistService.updatePlaylistById(this.playlist.id, updated);
+    this._playlistService.updatePlaylistById(this.playlist.id, updated);
   }
 
   async delete() {

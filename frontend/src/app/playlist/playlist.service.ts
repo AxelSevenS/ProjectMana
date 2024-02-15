@@ -13,27 +13,9 @@ export declare type AuthenticationState = 'loggedIn' | 'loggedOut' | 'disconnect
 })
 export class PlaylistService {
 
-  private updateEvent = new Subject<Playlist>();
-
-  public userPlaylists?: Playlist[] | null;
-
   constructor(
-    private authentication: AuthenticationService,
     private http: HttpClient
-  ) {
-    if (! this.userPlaylists && this.authentication.user) {
-      this.getPlaylistByAuthorId(this.authentication.user.id)
-        .pipe(first())
-        .subscribe(res => {
-          if (res instanceof HttpErrorResponse) {
-            this.userPlaylists = null;
-            return;
-          };
-  
-          this.userPlaylists = res;
-        })
-    }
-  }
+  ) {}
 
 
   getPlaylists(): Observable<Playlist[] | HttpErrorResponse> {
@@ -50,7 +32,7 @@ export class PlaylistService {
       }));
   }
 
-  getPlaylistByAuthorId(id: number): Observable<Playlist[] | HttpErrorResponse> {
+  getPlaylistsByAuthorId(id: number): Observable<Playlist[] | HttpErrorResponse> {
     return this.http.get<Playlist[]>(`${environment.host}/api/playlists/byAuthor/${id}`)
       .pipe(
         catchError((err: HttpErrorResponse) => {

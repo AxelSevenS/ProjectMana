@@ -7,7 +7,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { first } from 'rxjs';
 import { PlaylistService } from 'src/app/playlist/playlist.service';
 import { Playlist } from 'src/app/playlist/playlist.model';
-import { PlaylistListPage } from 'src/app/playlist/playlist-list-page/playlist-list.page';
+import { UserPlaylistsProvider } from 'src/app/playlist/user-playlists.provider';
 
 @Component({
   selector: 'app-song',
@@ -24,7 +24,7 @@ export class SongComponent implements OnInit {
   private _optionId = new Date().getTime().toString();
 
   public get authentication() { return this._authentication }
-  public get playlistService() { return this._playlistService }
+  public get userPlaylists() { return this._userPlaylists }
 
   public get fileUrl() { return this._fileUrl }
   private _fileUrl?: string | null;
@@ -33,6 +33,7 @@ export class SongComponent implements OnInit {
     private _authentication: AuthenticationService,
     private songService: SongService,
     private _playlistService: PlaylistService,
+    private _userPlaylists: UserPlaylistsProvider,
     private alertController: AlertController
   ) { }
 
@@ -49,16 +50,6 @@ export class SongComponent implements OnInit {
     } else if (! this.id && this.song) {
       this.id = this.song.id;
       this._fileUrl = this.songService.getSongFileUrl(this.song);
-    }
-
-    if ( ! this._playlistService.userPlaylists && this._authentication.user ) {
-      this._playlistService.userPlaylists = [];
-      this._playlistService.getPlaylistByAuthorId(this._authentication.user.id)
-        .pipe(first())
-        .subscribe(playlists => {
-          if (playlists instanceof HttpErrorResponse) return;
-          this._playlistService.userPlaylists = playlists;
-        })
     }
   }
 
@@ -88,38 +79,34 @@ export class SongComponent implements OnInit {
     let isChecked: boolean = ! e.target.checked;
 
     if (isChecked) {
-      this.playlistService.AddSongById(playlist.id, this.song!.id)
+      this._playlistService.AddSongById(playlist.id, this.song!.id)
         .pipe(first())
         .subscribe(res => {
           if (res instanceof HttpErrorResponse) {
             e.target.checked = !isChecked;
             return;
           }
+          if ( ! this._userPlaylists.playlists ) return;
           
-          let index = this._playlistService.userPlaylists?.findIndex(p => p.id == playlist.id) ?? -1;
-          console.log(index);
+          let index = this._userPlaylists.playlists.findIndex(p => p.id == playlist.id);
           if (index != -1) {
-            this._playlistService.userPlaylists![index] = res;
+            this._userPlaylists.playlists[index].songs = res.songs;
           }
-
-          console.log(this._playlistService.userPlaylists);
         })
       } else {
-        this.playlistService.removeSongById(playlist.id, this.song!.id)
+        this._playlistService.removeSongById(playlist.id, this.song!.id)
         .pipe(first())
         .subscribe(res => {
           if (res instanceof HttpErrorResponse) {
             e.target.checked = !isChecked;
             return;
           }
+          if ( ! this._userPlaylists.playlists ) return;
           
-          let index = this._playlistService.userPlaylists?.findIndex(p => p.id == playlist.id) ?? -1;
-          console.log(index);
+          let index = this._userPlaylists.playlists.findIndex(p => p.id == playlist.id);
           if (index != -1) {
-            this._playlistService.userPlaylists![index] = res;
+            this._userPlaylists.playlists[index].songs = res.songs;
           }
-
-          console.log(this._playlistService.userPlaylists);
         })
     }
   }
