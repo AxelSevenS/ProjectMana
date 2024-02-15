@@ -28,9 +28,6 @@ export class SongComponent implements OnInit {
   public get fileUrl() { return this._fileUrl }
   private _fileUrl?: string | null;
 
-  public get mimeType() { return this._mimeType }
-  private _mimeType?: string | null;
-
   constructor(
     private _authentication: AuthenticationService,
     private songService: SongService,
@@ -55,9 +52,6 @@ export class SongComponent implements OnInit {
     }
   }
 
-  private updateSongData() {
-  }
-
   async delete() {
     if( ! this.song ) return;
 
@@ -79,14 +73,43 @@ export class SongComponent implements OnInit {
       });
   }
 
-  togglePlaylist(e: any, id: number) {
-    console.log(e.target.checked, id);
+  togglePlaylist(e: any, playlist: Playlist) {
+    // ion-checkbox's "checked" binding is reversed for some dumbass reason
+    let isChecked: boolean = ! e.target.checked;
+
+    if (isChecked) {
+      this.playlistService.AddSongById(playlist.id, this.song!.id)
+        .pipe(first())
+        .subscribe(res => {
+          if (res instanceof HttpErrorResponse) {
+            e.target.checked = !isChecked;
+            return;
+          }
+          
+          let index = this.playlistService.userPlaylists?.findIndex(p => p.id == playlist.id) ?? -1;
+          if (index != -1) {
+            this.playlistService.userPlaylists![index] = playlist;
+          }
+        })
+    } else {
+      this.playlistService.removeSongById(playlist.id, this.song!.id)
+        .pipe(first())
+        .subscribe(res => {
+          if (res instanceof HttpErrorResponse) {
+            e.target.checked = !isChecked;
+            return;
+          }
+
+          let index = this.playlistService.userPlaylists?.findIndex(p => p.id == playlist.id) ?? -1;
+          if (index != -1) {
+            this.playlistService.userPlaylists![index] = playlist;
+          }
+        })
+    }
   }
 
   playlistContainsSong(playlist: Playlist, songId: number) {
-    let res = playlist.songs.find(s => this.song && s.id === this.song.id) !== undefined;
-    console.log(res);
-    return res;
+    return playlist.songs.find(s => this.song && s.id === this.song.id) !== undefined;
   }
 
 }

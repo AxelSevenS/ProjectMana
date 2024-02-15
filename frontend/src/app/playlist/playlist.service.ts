@@ -90,7 +90,7 @@ export class PlaylistService {
   AddSongById(playlistId: number, songId: number): Observable<Playlist | HttpErrorResponse> {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-    return this.http.put<Playlist>(`${environment.host}/api/playlists/${playlistId}/addSong/${songId}`, {headers: headers})
+    return this.http.post<Playlist>(`${environment.host}/api/playlists/${playlistId}/addSong/${songId}`, {}, {headers: headers})
       .pipe(
         catchError((err: HttpErrorResponse) => {
           return of(err);
@@ -101,7 +101,7 @@ export class PlaylistService {
   removeSongById(playlistId: number, songId: number): Observable<Playlist | HttpErrorResponse> {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-    return this.http.put<Playlist>(`${environment.host}/api/playlists/${playlistId}/removeSong/${songId}`, {headers: headers})
+    return this.http.post<Playlist>(`${environment.host}/api/playlists/${playlistId}/removeSong/${songId}`, {}, {headers: headers})
       .pipe(
         catchError((err: HttpErrorResponse) => {
           return of(err);
