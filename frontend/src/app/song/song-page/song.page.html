@@ -1,54 +1,62 @@
-<ion-item *ngIf="song && fileUrl">
+<ion-content *ngIf="song && fileUrl">
 
-  <ion-col>
-    <audio controls [src]="fileUrl"></audio>
-  </ion-col>
-  
-  <ion-col>
-    <form [formGroup]="editSongForm">
-      
-      <ion-list>
-        <ng-template [ngIf]="this.authentication.user?.id == song.authorId || this.authentication.auths.SongEditor" [ngIfElse]="isNotOwner">
-          <ion-item lines="full">
-            <ion-input formControlName="name" type="text" label="Nom" labelPlacement="floating"></ion-input>
-          </ion-item>
-        </ng-template>
-        
-        <ng-template #isNotOwner>
-          <ion-item lines="full">
-            <ion-label position="stacked">Nom</ion-label>
-            <ion-text>{{ this.song.name }}</ion-text>
-          </ion-item>
-        </ng-template>
-      </ion-list>
-      
-      <ion-list>
-        <ion-row (click)="onSubmit()" *ngIf="this.authentication.user?.id == song.authorId || this.authentication.auths.SongEditor">
-          <ion-col>
-            <ion-button type="submit" expand="block">
-              Sauvegarder
-            </ion-button>
-          </ion-col>
-        </ion-row>
-        
-        <ion-row>
-          <ion-col>
-            <ion-button [href]="fileUrl" expand="block">
-              <ion-icon slot="start" name="eye-outline"></ion-icon>
-              Afficher
-            </ion-button>
-          </ion-col>
-          
-          <ion-col *ngIf="this.authentication.user?.id == song.authorId || this.authentication.auths.SongDeleter">
-            <ion-button (click)="delete()" color="danger" expand="block">
-              <ion-icon slot="start" name="trash-outline"></ion-icon>
-              Supprimer
-            </ion-button>
-          </ion-col>
-        </ion-row>
-      </ion-list>
-      
-    </form>
-  </ion-col>
+  <ion-grid>
     
-</ion-item>
+    <ion-row>
+      <ion-col>
+        <audio controls [src]="fileUrl"></audio>
+      </ion-col>
+    </ion-row>
+    
+    <ion-row>
+      <ion-col>
+        <form [formGroup]="editSongForm">
+          
+          <ion-list>
+            <ng-template [ngIf]="this.authentication.user?.id == song.authorId || this.authentication.auths.SongEditor" [ngIfElse]="isNotOwner">
+              <ion-item lines="full">
+                <ion-input formControlName="name" type="text" label="Nom" labelPlacement="floating"></ion-input>
+              </ion-item>
+            </ng-template>
+            
+            <ng-template #isNotOwner>
+              <ion-item lines="full">
+                <ion-label position="stacked">Nom</ion-label>
+                <ion-text>{{ this.song.name }}</ion-text>
+              </ion-item>
+            </ng-template>
+          </ion-list>
+          
+          <ion-grid>
+            <ion-row (click)="onSubmit()" *ngIf="this.authentication.user?.id == song.authorId || this.authentication.auths.SongEditor">
+              <ion-col>
+                <ion-button type="submit" expand="block">
+                  Sauvegarder
+                </ion-button>
+              </ion-col>
+            </ion-row>
+            
+            <ion-row>
+              <ion-col>
+                <ion-button [href]="fileUrl" expand="block">
+                  <ion-icon slot="start" name="eye-outline"></ion-icon>
+                  Afficher
+                </ion-button>
+              </ion-col>
+              
+              <ion-col *ngIf="this.authentication.user?.id == song.authorId || this.authentication.auths.SongDeleter">
+                <ion-button (click)="delete()" color="danger" expand="block">
+                  <ion-icon slot="start" name="trash-outline"></ion-icon>
+                  Supprimer
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+          
+        </form>
+      </ion-col>
+    </ion-row>
+    
+  </ion-grid>
+    
+</ion-content>

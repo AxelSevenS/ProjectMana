@@ -44,10 +44,7 @@ const routes: Routes = [
     AppModule,
     RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules, useHash: true })
   ],
-  exports: [RouterModule],
-  providers: [
-    // ActivatedRoute
-  ],
+  // exports: [RouterModule],
   bootstrap: [AppComponent],
 })
 export class AppRoutingModule {}

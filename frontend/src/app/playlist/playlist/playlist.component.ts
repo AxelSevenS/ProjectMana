@@ -6,6 +6,7 @@ import { AlertController } from '@ionic/angular';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { UserService } from 'src/app/user/user.service';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-playlist',
@@ -30,8 +31,6 @@ export class PlaylistComponent implements OnInit {
   private _mimeType: string | null = null;
 
   constructor(
-    private router: Router,
-    private userService: UserService,
     private _authentication: AuthenticationService,
     private playlistService: PlaylistService,
     private alertController: AlertController
@@ -42,11 +41,26 @@ export class PlaylistComponent implements OnInit {
       this.playlistService.getPlaylistById(this.id)
         .subscribe(playlist => {
           if (playlist instanceof HttpErrorResponse) return;
+
           this.playlist = playlist;
         })
     } else if (! this.id && this.playlist) {
       this.id = this.playlist.id;
     }
+
+    this.playlistService.eventRemoved
+      .subscribe(playlist => {
+        console.log("removed", playlist);
+        if (this.playlist?.id != playlist.id) return;
+        this.playlist = null;
+      });
+      
+    this.playlistService.eventUpdated
+    .subscribe(playlist => {
+        console.log("updated", playlist);
+        if (this.playlist?.id != playlist.id) return;
+        this.playlist = playlist;
+      });
   }
 
   async delete() {
@@ -64,8 +78,6 @@ export class PlaylistComponent implements OnInit {
           await alert.present();
           return;
         }
-        
-        this.router.navigate(['']);
       });
     }
 

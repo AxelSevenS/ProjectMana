@@ -6,6 +6,7 @@ import { Song } from 'src/app/song/song.model';
 import { SongService } from 'src/app/song/song.service';
 import { UserService } from '../user.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-user-library',

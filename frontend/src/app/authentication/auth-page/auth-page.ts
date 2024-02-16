@@ -4,6 +4,7 @@ import { AuthenticationService } from '../authentication.service';
 import { Router } from '@angular/router';
 import { AuthenticationValidators } from '../authentication-utility';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-auth-page',
@@ -41,7 +42,7 @@ export class AuthPage implements OnInit {
   login() {
     this.authenticationService.login(this.loginForm.controls["username"].value, this.loginForm.controls["password"].value)
       .subscribe(u => {
-        if (u instanceof HttpErrorResponse) { return };
+        if (u instanceof HttpErrorResponse) return;
 
         this.router.navigate([''])
           .then(() => window.location.reload())

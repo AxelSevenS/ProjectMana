@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, catchError, map, of, share } from 'rxjs';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { JwtPayload, jwtDecode } from 'jwt-decode';
@@ -55,7 +55,8 @@ export class AuthenticationService {
     const headers = new HttpHeaders({ 'enctype': 'multipart/form-data' });
 
     return this.http.post<string>(`${environment.host}/api/users/auth/`, formData, {headers: headers})
-      .pipe( 
+      .pipe(
+        share(),
         map(res => {
           this._user = this.jwtToUser(res);
           if (this._user === null) throw new HttpErrorResponse({ error: 400 });
@@ -83,7 +84,8 @@ export class AuthenticationService {
 
     return this.http.put<User>(`${environment.host}/api/users/`, formData, {headers: headers})
       .pipe(
-        catchError(err => of(err) )
+        share(),
+        catchError((err: HttpErrorResponse) => of(err) )
       );
   }
 
@@ -91,7 +93,11 @@ export class AuthenticationService {
     this._user = null;
     this._state = 'loggedOut';
     localStorage.removeItem(AuthenticationService.storageKey);
-    this.router.navigate(['']);
+    
+    this.router.navigate([''])
+      .then(() => {
+        window.location.reload();
+      });
   }
 
   private jwtToUser(token: string): User | null {

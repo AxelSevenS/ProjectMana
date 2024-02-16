@@ -2,6 +2,7 @@ import { Component, Input, OnInit, numberAttribute } from '@angular/core';
 import { UserService } from '../user.service';
 import { User } from '../user.model';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-user',
@@ -26,6 +27,7 @@ export class UserComponent implements OnInit {
       this.userService.getUserById(this.id)
         .subscribe(user => {
           if (user instanceof HttpErrorResponse) return;
+
           this.user = user;
         })
     } else if (! this.id && this.user) {

@@ -6,6 +6,7 @@ import { AuthenticationService } from 'src/app/authentication/authentication.ser
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthenticationValidators } from 'src/app/authentication/authentication-utility';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-password-edit',

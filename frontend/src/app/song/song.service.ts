@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, catchError, of } from 'rxjs';
+import { Observable, Subject, catchError, first, of, share } from 'rxjs';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Song } from './song.model';
@@ -14,9 +14,18 @@ export declare type AuthenticationState = 'loggedIn' | 'loggedOut' | 'disconnect
 export class SongService {
 
   constructor(
-    private authentication: AuthenticationService,
     private http: HttpClient
-  ) { }
+  ) {}
+
+  public get eventAdded() { return this._eventAdded };
+  public _eventAdded: Subject<Song> = new Subject<Song>;
+
+  public get eventRemoved() { return this._eventRemoved };
+  public _eventRemoved: Subject<Song> = new Subject<Song>;
+
+  public get eventUpdated() { return this._eventUpdated };
+  public _eventUpdated: Subject<Song> = new Subject<Song>;
+  
 
   getSongFileUrl(song: Song): string {
     return `${environment.host}/api/songs/file/${song.id}`;
@@ -24,30 +33,42 @@ export class SongService {
 
   getSongs(): Observable<Song[] | HttpErrorResponse> {
     return this.http.get<Song[]>(`${environment.host}/api/songs`)
-      .pipe( catchError((err: HttpErrorResponse) => {
-        return of(err);
-      }));
+      .pipe(
+        share(),
+        catchError((err: HttpErrorResponse) => {
+          return of(err);
+        })
+      );
   }
 
   getSongById(id: number): Observable<Song | HttpErrorResponse> {
     return this.http.get<Song>(`${environment.host}/api/songs/${id}`)
-      .pipe( catchError((err: HttpErrorResponse) => {
-        return of(err);
-      }));
+      .pipe(
+        share(),
+        catchError((err: HttpErrorResponse) => {
+          return of(err);
+        })
+      );
   }
 
   getSongByPlaylistId(id: number): Observable<Song[] | HttpErrorResponse> {
     return this.http.get<Song[]>(`${environment.host}/api/songs/fromPlaylist/${id}`)
-      .pipe( catchError((err: HttpErrorResponse) => {
-        return of(err);
-      }));
+      .pipe(
+        share(),
+        catchError((err: HttpErrorResponse) => {
+          return of(err);
+        })
+      );
   }
 
   getSongsByAuthorId(id: number): Observable<Song[] | HttpErrorResponse> {
     return this.http.get<Song[]>(`${environment.host}/api/songs/byAuthor/${id}`)
-      .pipe( catchError((err: HttpErrorResponse) => {
-        return of(err);
-      }));
+      .pipe( 
+        share(),
+        catchError((err: HttpErrorResponse) => {
+          return of(err);
+        })
+      );
   }
 
   createSong(name: string, file: Blob): Observable<Song | HttpErrorResponse> {
@@ -57,10 +78,21 @@ export class SongService {
 
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}`, 'enctype': 'multipart/form-data' });
 
-    return this.http.put<Song>(`${environment.host}/api/songs`, formData, {headers: headers})
-      .pipe( catchError((err: HttpErrorResponse) => {
-        return of(err);
-      }));
+    let observable = this.http.put<Song>(`${environment.host}/api/songs`, formData, {headers: headers})
+      .pipe( 
+        share(),
+        catchError((err: HttpErrorResponse) => {
+          return of(err);
+        })
+      );
+
+    observable
+      .subscribe(res => {
+        if (res instanceof HttpErrorResponse) return;
+        this._eventAdded.next(res);
+      });
+    
+    return observable;
   }
 
   updateSongById(id: number, song: Partial<Song>): Observable<Song | HttpErrorResponse> {
@@ -70,23 +102,41 @@ export class SongService {
 
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-    return this.http.patch<Song>(`${environment.host}/api/songs/${id}`, formData, {headers: headers})
+    let observable = this.http.patch<Song>(`${environment.host}/api/songs/${id}`, formData, {headers: headers})
       .pipe(
+        share(),
         catchError((err: HttpErrorResponse) => {
           return of(err);
         })
       );
+
+    observable
+      .subscribe(res => {
+        if (res instanceof HttpErrorResponse) return;
+        this._eventUpdated.next(res);
+      });
+    
+    return observable;
   }
 
   deleteSongById(id: number): Observable<Song | HttpErrorResponse> {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-    return this.http.delete<Song>(`${environment.host}/api/songs/${id}`, {headers: headers})
+    let observable = this.http.delete<Song>(`${environment.host}/api/songs/${id}`, {headers: headers})
       .pipe(
+        share(),
         catchError((err: HttpErrorResponse) => {
           return of(err);
         })
       );
+
+    observable
+      .subscribe(res => {
+        if (res instanceof HttpErrorResponse) return;
+        this._eventRemoved.next(res);
+      });
+    
+    return observable;
   }
 
 }

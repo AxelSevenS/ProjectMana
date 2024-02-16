@@ -15,7 +15,6 @@ import { CreatePlaylistPage } from './playlist/create-playlist.page';
     ReactiveFormsModule,
     IonicModule.forRoot()
   ],
-  providers: [],
   declarations: [CreatePage, CreateSongPage, CreatePlaylistPage],
   exports: [CreatePage, CreateSongPage, CreatePlaylistPage]
 })

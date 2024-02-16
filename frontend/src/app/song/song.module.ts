@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import { SongListPage } from './song-list-page/song-list.page';
+import { SongListComponent } from './song-list/song-list.component';
 import { SongPage } from './song-page/song.page';
 import { SongComponent } from './song/song.component';
 import { RouterModule } from '@angular/router';
@@ -16,8 +16,8 @@ import { RouterModule } from '@angular/router';
     ReactiveFormsModule,
     FormsModule
   ],
-  declarations: [SongListPage, SongPage, SongComponent],
-  exports: [SongListPage, SongPage, SongComponent],
+  declarations: [SongListComponent, SongPage, SongComponent],
+  exports: [SongListComponent, SongComponent],
 })
 export class SongModule {
 }

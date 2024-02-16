@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
+import { first } from 'rxjs';
 import { SongService } from 'src/app/song/song.service';
 
 @Component({
@@ -47,6 +48,7 @@ export class CreateSongPage {
     )
       .subscribe(song => {
         if (song instanceof HttpErrorResponse) return;
+        
         this.router.navigate(['/songs', song.id]);
       })
   }

@@ -20,19 +20,30 @@
             <ion-card-title color="primary">Se Connecter</ion-card-title>
           </ion-card-header>
           
-          <ion-item>
-            <ion-icon color="primary" size="medium" name="at-outline"></ion-icon>
-            <ion-input formControlName="username" type="text" [clearOnEdit]="false" placeholder="Nom d'Utilisateur"></ion-input>
-          </ion-item>
-          
-          <ion-item>
-            <ion-icon color="primary" size="medium" name="lock-closed-outline"></ion-icon>
-            <ion-input formControlName="password" type="password" [clearOnEdit]="false" placeholder="Mot de Passe"></ion-input>
-          </ion-item>
+    
+          <ion-grid>
+
+            <ion-row>
+              <ion-col>
+                <ion-item>
+                  <ion-icon slot="start" color="primary" size="medium" name="at-outline"></ion-icon>
+                  <ion-input formControlName="username" type="text" [clearOnEdit]="false" placeholder="Nom d'Utilisateur"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+            <ion-row>
+              <ion-col>
+                <ion-item>
+                  <ion-icon slot="start" color="primary" size="medium" name="lock-closed-outline"></ion-icon>
+                  <ion-input formControlName="password" type="password" [clearOnEdit]="false" placeholder="Mot de Passe"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+          </ion-grid>
           
           <ion-button type="submit" expand="block">Se Connecter</ion-button>
-          
-          <p class="mb-0 mt-4 text-center"><a href="https://www.web-leb.com/code" class="link">Forgot your password?</a></p>
         </form>
       </div>
       
@@ -42,20 +53,36 @@
             <ion-card-title color="primary">S'Inscrire</ion-card-title>
           </ion-card-header>
           
-          <ion-item>
-            <ion-icon color="primary" size="medium" name="person-outline"></ion-icon>
-            <ion-input formControlName="username" type="text" [clearOnEdit]="false" placeholder="Nom d'Utilisateur"></ion-input>
-          </ion-item>
+          <ion-grid>
+
+            <ion-row>
+              <ion-col>
+                <ion-item>
+                  <ion-icon slot="start" color="primary" size="medium" name="person-outline"></ion-icon>
+                  <ion-input formControlName="username" type="text" [clearOnEdit]="false" placeholder="Nom d'Utilisateur"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
           
-          <ion-item>
-            <ion-icon color="primary" size="medium" name="lock-closed-outline"></ion-icon>
-            <ion-input formControlName="password" type="password" [clearOnEdit]="false" placeholder="Mot de Passe"></ion-input>
-          </ion-item>
-          
-          <ion-item>
-            <ion-icon color="primary" size="medium" name="checkmark-outline"></ion-icon>
-            <ion-input formControlName="passwordConfirm" type="password" [clearOnEdit]="false" placeholder="Confirmer Mot de Passe"></ion-input>
-          </ion-item>
+            <ion-row>
+              <ion-col>
+                <ion-item>
+                  <ion-icon slot="start" color="primary" size="medium" name="lock-closed-outline"></ion-icon>
+                  <ion-input formControlName="password" type="password" [clearOnEdit]="false" placeholder="Mot de Passe"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+                
+            <ion-row>
+              <ion-col>
+                <ion-item>
+                  <ion-icon slot="start" color="primary" size="medium" name="checkmark-outline"></ion-icon>
+                  <ion-input formControlName="passwordConfirm" type="password" [clearOnEdit]="false" placeholder="Confirmer Mot de Passe"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+          </ion-grid>
           
           <ion-button type="submit" expand="block">S'Inscrire</ion-button>
         </form>

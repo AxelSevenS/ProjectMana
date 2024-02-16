@@ -7,6 +7,7 @@ import { Song } from '../song.model';
 import { AlertController } from '@ionic/angular';
 import { SafeUrl } from '@angular/platform-browser';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-song-page',
@@ -53,6 +54,18 @@ export class SongPage {
         this._fileUrl = this.songService.getSongFileUrl(this._song);
         this.editSongForm.controls['name'].setValue(song?.name);
       });
+
+    this._songService.eventRemoved
+      .subscribe(song => {
+        if (this._song?.id != song.id) return;
+        this._song = null;
+      });
+      
+      this._songService.eventUpdated
+      .subscribe(song => {
+        if (this._song?.id != song.id) return;
+        this._song = song;
+      });
   }
 
   onSubmit(): void {
@@ -62,10 +75,7 @@ export class SongPage {
     this.song.name = this.editSongForm.controls['name'].value;
     let updated: Song = this.song;
 
-    this.songService.updateSongById(this.song.id, updated)
-      .subscribe(res => {
-        console.log(res);
-      });
+    this.songService.updateSongById(this.song.id, updated);
   }
 
   async delete() {
