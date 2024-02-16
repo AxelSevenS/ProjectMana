@@ -83,7 +83,7 @@ export class PlaylistPage {
         if (res instanceof HttpErrorResponse) {
           const alert = await this.alertController.create({
             header: 'Erreur lors de la Suppression de la Playlist',
-            message: `La suppression de la Playlist a échoué (erreur ${res.status})`,
+            message: `La suppression de la Playlist a échoué (erreur ${res.statusText})`,
             buttons: ['Ok'],
           });
           

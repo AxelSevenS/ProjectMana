@@ -46,10 +46,19 @@ export class CreateSongPage {
       this.publishSongForm.controls['name'].value, 
       this.file
     )
-      .subscribe(song => {
-        if (song instanceof HttpErrorResponse) return;
+      .subscribe(async res => {
+        if (res instanceof HttpErrorResponse) {
+          const alert = await this.alertController.create({
+            header: 'Erreur lors de la Création de Chanson',
+            message: `La Création de Chanson a échoué (erreur ${res.statusText})`,
+            buttons: ['Ok'],
+          });
+          
+          await alert.present();
+          return;
+        }
         
-        this.router.navigate(['/songs', song.id]);
+        this.router.navigate(['/songs', res.id]);
       })
   }
 }

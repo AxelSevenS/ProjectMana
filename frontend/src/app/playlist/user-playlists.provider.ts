@@ -18,15 +18,15 @@ export class UserPlaylistsProvider {
 		private _playlistService: PlaylistService
 	) {
 		if (this._authentication.user && ! this.playlists) {
-		  this._playlistService.getPlaylistsByAuthorId(this._authentication.user.id)
-			.subscribe(res => {
-			  if (res instanceof HttpErrorResponse) {
-				this._playlists = null;
-				return;
-			  };
-	  
-			  this._playlists = res;
-			})
+			this._playlistService.getPlaylistsByAuthorId(this._authentication.user.id)
+				.subscribe(res => {
+				if (res instanceof HttpErrorResponse) {
+					this._playlists = null;
+					return;
+				};
+		
+				this._playlists = res;
+				})
 		}
 		
 		this._playlistService.eventAdded

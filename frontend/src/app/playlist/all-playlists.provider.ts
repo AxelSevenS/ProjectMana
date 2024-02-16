@@ -16,9 +16,9 @@ export class AllPlaylistsProvider {
 		private _playlistService: PlaylistService
 	) {
 		this._playlistService.getPlaylists()
-		  .subscribe(playlist => {
+			.subscribe(playlist => {
 				this._playlists = playlist instanceof HttpErrorResponse ? null : playlist;
-		  });
+			});
 		
 		this._playlistService.eventAdded
 			.subscribe(playlist => {

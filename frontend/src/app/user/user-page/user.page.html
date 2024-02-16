@@ -56,10 +56,19 @@
                 </ion-col>
               </ion-row>
                 
-              <ion-row>
-                <ion-col *ngIf="authentication.user?.id == user.id || authentication.auths.UserEditor">
+              <ion-row *ngIf="authentication.user?.id == user.id || authentication.auths.UserEditor">
+                <ion-col>
                   <ion-button (click)="onSubmit()" expand="block">
                     Sauvegarder
+                  </ion-button>
+                </ion-col>
+              </ion-row>
+
+              <ion-row *ngIf="authentication.user?.id == user.id || authentication.auths.UserEditor">
+                <ion-col>
+                  <ion-button *ngIf="this.authentication.user?.id == user.id || this.authentication.auths.UserDeleter" (click)="delete()" color="danger" expand="block">
+                    <ion-icon slot="start" name="trash-outline"></ion-icon>
+                    Supprimer
                   </ion-button>
                 </ion-col>
               </ion-row>

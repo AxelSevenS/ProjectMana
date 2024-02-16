@@ -37,10 +37,19 @@ export class CreatePlaylistPage {
     this.playlistService.createPlaylist(
       this.publishPlaylistForm.controls['name'].value, 
     )
-      .subscribe(playlist => {
-        if (playlist instanceof HttpErrorResponse) return;
+      .subscribe(async res => {
+        if (res instanceof HttpErrorResponse) {
+          const alert = await this.alertController.create({
+            header: 'Erreur lors de la Création de Playlist',
+            message: `La Création de Playlist (erreur ${res.statusText})`,
+            buttons: ['Ok'],
+          });
+          
+          await alert.present();
+          return;
+        }
         
-        this.router.navigate(['/playlists', playlist.id]);
+        this.router.navigate(['/playlists', res.id]);
       })
   }
 }

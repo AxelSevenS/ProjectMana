@@ -7,6 +7,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthenticationValidators } from 'src/app/authentication/authentication-utility';
 import { HttpErrorResponse } from '@angular/common/http';
 import { first } from 'rxjs';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-password-edit',
@@ -34,7 +35,7 @@ export class PasswordEditPage {
 
 
   constructor(
-    private router: Router,
+    private alertController: AlertController,
     private formBuilder: FormBuilder,
     private activatedRoute: ActivatedRoute,
     private userService: UserService,
@@ -53,15 +54,22 @@ export class PasswordEditPage {
     };
 
     this.userService.updateUserById(this.authentication.user.id, user)
-      .subscribe(res => {
-        if (res) {
-          if (res instanceof HttpErrorResponse) return;
-
-          this.authentication.login(res.username, user.password)
-            .subscribe(() => {
-              window.location.reload();
-            });
+      .subscribe( async res => {
+        if (res instanceof HttpErrorResponse) {
+          const alert = await this.alertController.create({
+            header: 'Erreur lors de la Modification du Mot de Passe',
+            message: `La Modification du Mot de Passe a échoué (erreur ${res.statusText})`,
+            buttons: ['Ok'],
+          });
+          
+          await alert.present();
+          return;
         }
+
+        this.authentication.login(res.username, user.password)
+          .subscribe(() => {
+            window.location.reload();
+          });
       });
   }
 

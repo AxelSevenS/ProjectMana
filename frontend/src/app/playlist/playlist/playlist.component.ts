@@ -50,14 +50,12 @@ export class PlaylistComponent implements OnInit {
 
     this.playlistService.eventRemoved
       .subscribe(playlist => {
-        console.log("removed", playlist);
         if (this.playlist?.id != playlist.id) return;
         this.playlist = null;
       });
       
     this.playlistService.eventUpdated
-    .subscribe(playlist => {
-        console.log("updated", playlist);
+      .subscribe(playlist => {
         if (this.playlist?.id != playlist.id) return;
         this.playlist = playlist;
       });
@@ -71,7 +69,7 @@ export class PlaylistComponent implements OnInit {
         if (res instanceof HttpErrorResponse) {
           const alert = await this.alertController.create({
             header: 'Erreur lors de la Suppression de la Playlist',
-            message: `La suppression de la Playlist a échoué (erreur ${res.status})`,
+            message: `La suppression de la Playlist a échoué (erreur ${res.statusText})`,
             buttons: ['Ok'],
           });
           

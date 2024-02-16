@@ -61,7 +61,7 @@ export class SongPage {
         this._song = null;
       });
       
-      this._songService.eventUpdated
+    this._songService.eventUpdated
       .subscribe(song => {
         if (this._song?.id != song.id) return;
         this._song = song;
@@ -83,18 +83,18 @@ export class SongPage {
 
     this._songService.deleteSongById(this.song.id)
       .subscribe(async res => {
-        if (res) {
-          this.router.navigate(['']);
+        if (res instanceof HttpErrorResponse) {
+          const alert = await this.alertController.create({
+            header: 'Erreur lors de la Suppression de la Chanson',
+            message: `La Suppression de la Chanson à échoué (erreur ${res.statusText})`,
+            buttons: ['Ok'],
+          });
+          
+          await alert.present();
           return;
         }
 
-        const alert = await this.alertController.create({
-          header: 'Erreur lors de la Suppression du Média',
-          message: 'La suppression du Média a échoué',
-          buttons: ['Ok'],
-        });
-    
-        await alert.present();
+        this.router.navigate(['']);
       });
   }
 

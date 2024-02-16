@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthenticationValidators } from '../authentication-utility';
 import { HttpErrorResponse } from '@angular/common/http';
 import { first } from 'rxjs';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-auth-page',
@@ -32,6 +33,7 @@ export class AuthPage implements OnInit {
   );
 
   constructor(
+    private alertController: AlertController,
     private formBuilder: FormBuilder,
     private authenticationService: AuthenticationService,
     private router: Router
@@ -41,8 +43,17 @@ export class AuthPage implements OnInit {
 
   login() {
     this.authenticationService.login(this.loginForm.controls["username"].value, this.loginForm.controls["password"].value)
-      .subscribe(u => {
-        if (u instanceof HttpErrorResponse) return;
+      .subscribe(async res => {
+        if (res instanceof HttpErrorResponse) {
+          const alert = await this.alertController.create({
+            header: 'Erreur lors de la Connexion',
+            message: `La Connexion a échoué (erreur ${res.statusText})`,
+            buttons: ['Ok'],
+          });
+          
+          await alert.present();
+          return;
+        }
 
         this.router.navigate([''])
           .then(() => window.location.reload())
@@ -53,8 +64,17 @@ export class AuthPage implements OnInit {
     let username = this.registerForm.controls["username"].value;
     let password = this.registerForm.controls["password"].value;
     this.authenticationService.register(username, password)
-      .subscribe(u => {
-        if (u instanceof HttpErrorResponse) { return };
+      .subscribe(async res => {
+        if (res instanceof HttpErrorResponse) {
+          const alert = await this.alertController.create({
+            header: 'Erreur lors de l\'Inscription',
+            message: `L\'Inscription a échoué (erreur ${res.statusText})`,
+            buttons: ['Ok'],
+          });
+          
+          await alert.present();
+          return;
+        }
 
         this.authenticationService.login(username, password)
           .subscribe(() => {

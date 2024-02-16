@@ -71,8 +71,8 @@ export class SongComponent implements OnInit {
       .subscribe(async res => {
         if (res instanceof HttpErrorResponse) {
           const alert = await this.alertController.create({
-            header: 'Erreur lors de la Suppression du Média',
-            message: 'La suppression du Média a échoué',
+            header: 'Erreur lors de la Suppression de la Chanson',
+            message: `La Suppression de la Chanson a échoué (erreur ${res.statusText})`,
             buttons: ['Ok'],
           });
           
@@ -88,16 +88,30 @@ export class SongComponent implements OnInit {
 
     if (isChecked) {
       this._playlistService.addSongById(playlist.id, this.song!.id)
-        .subscribe(res => {
+        .subscribe(async res => {
           if (res instanceof HttpErrorResponse) {
+            const alert = await this.alertController.create({
+              header: 'Erreur lors de l\'Ajout de la Chanson à la Playlist',
+              message: `L\'Ajout de la Chanson à la Playlist a échoué (erreur ${res.statusText})`,
+              buttons: ['Ok'],
+            });
+            
+            await alert.present();
             e.target.checked = !isChecked;
             return;
           }
         });
     } else {
       this._playlistService.removeSongById(playlist.id, this.song!.id)
-        .subscribe(res => {
+        .subscribe(async res => {
           if (res instanceof HttpErrorResponse) {
+            const alert = await this.alertController.create({
+              header: 'Erreur lors de la Suppression de la Chanson de la Playlist',
+              message: `La Suppression de la Chanson de la Playlist a échoué (erreur ${res.statusText})`,
+              buttons: ['Ok'],
+            });
+            
+            await alert.present();
             e.target.checked = !isChecked;
             return;
           }

@@ -21,6 +21,10 @@
             <ion-icon slot="start" name="library-outline"></ion-icon>
             Galerie
           </ion-button>
+          <ion-button *ngIf="this.authentication.user?.id == user.id || this.authentication.auths.UserDeleter" (click)="delete()" color="danger" expand="block">
+            <ion-icon slot="start" name="trash-outline"></ion-icon>
+            Supprimer
+          </ion-button>
         </ng-template>
       </ion-popover>
     </ion-row>
