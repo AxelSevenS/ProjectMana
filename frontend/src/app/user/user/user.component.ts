@@ -1,6 +1,8 @@
 import { Component, Input, OnInit, numberAttribute } from '@angular/core';
 import { UserService } from '../user.service';
 import { User } from '../user.model';
+import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-user',
@@ -13,6 +15,9 @@ export class UserComponent implements OnInit {
 
   @Input({alias: 'user-id', transform: numberAttribute}) public id?: number;
 
+  public get optionId() { return this._optionId};
+  private _optionId = new Date().getTime().toString();
+
   constructor(
     private userService: UserService
   ) { }
@@ -20,8 +25,10 @@ export class UserComponent implements OnInit {
   ngOnInit() {
     if (this.id && ! this.user) {
       this.userService.getUserById(this.id)
-        .subscribe(m => {
-          this.user = m;
+        .subscribe(user => {
+          if (user instanceof HttpErrorResponse) return;
+
+          this.user = user;
         })
     } else if (! this.id && this.user) {
       this.id = this.user.id;

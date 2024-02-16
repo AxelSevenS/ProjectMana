@@ -31,6 +31,16 @@ label {
 	margin-bottom: 0;
 }
 
+ion-popover {
+	--backdrop-opacity: 0.1;
+}
+
+ion-button[shape=circle] {
+    --border-radius: 50%;
+    width: 56px;
+    height: 56px;
+}
+
 app-root {
 	& > * {
 		visibility: hidden;

@@ -1,0 +1,29 @@
+<ion-item>
+
+	<ion-grid>
+		<ion-row>
+			<ion-col>
+				<form [formGroup]="publishPlaylistForm" (submit)="onSubmit()">
+					
+					<ion-list>
+						<ion-item lines="full">
+							<ion-input formControlName="name" type="text" label="Nom" labelPlacement="floating"></ion-input>
+						</ion-item>
+					</ion-list>
+					
+					<ion-list>
+						<ion-row>
+							<ion-col>
+								<ion-button type="submit" expand="block">
+									Créer
+								</ion-button>
+							</ion-col>
+						</ion-row>
+					</ion-list>
+					
+				</form>
+			</ion-col>
+		</ion-row>
+	</ion-grid>
+	
+</ion-item>

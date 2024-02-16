@@ -21,6 +21,22 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 		await repository.Playlists.Include(p => p.Songs).ToListAsync();
 
 	/// <summary>
+	/// Get playlists by their author's id
+	/// </summary>
+	/// <param name="id">The id of the playlist author</param>
+	/// <returns>
+	/// The playlists with the given author id
+	/// </returns>
+	[HttpGet("byAuthor/{id}")]
+	public async Task<ActionResult<List<Song>>> GetByAuthorId(uint id) =>
+		repository.Playlists.Include(p => p.Songs)
+			.Where(s => s.AuthorId == id) switch
+		{
+			IQueryable<Playlist> songQuery => Ok(await songQuery.ToListAsync()),
+			null => NotFound(),
+		};
+
+	/// <summary>
 	/// Get all Songs
 	/// </summary>
 	/// <returns>
@@ -28,7 +44,8 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 	/// </returns>
 	[HttpGet("withSong/{songId}")]
 	public async Task<List<Playlist>> GetAllWithSong(uint songId) =>
-		await repository.Playlists.Include(p => p.Songs).Where(p => p.Songs.Any(s => s.Id == songId)).ToListAsync();
+		await repository.Playlists.Include(p => p.Songs)
+			.Where(p => p.Songs.Any(s => s.Id == songId)).ToListAsync();
 
 	/// <summary>
 	/// Get a song by id
@@ -56,7 +73,7 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 	/// </returns>
 	[HttpPut]
 	[Authorize]
-	public async Task<ActionResult<Playlist>> AddPlaylist([FromForm]string name)
+	public async Task<ActionResult<Playlist>> AddPlaylist([FromForm] string name)
 	{
 		if ( ! VerifyAuthZ(ProjectMana.User.Authorizations.CreatePlaylists, out uint authorId, out ActionResult<Playlist> error) )
 		{
@@ -81,7 +98,7 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 	/// <param name="playlistId"></param>
 	/// <param name="songId"></param>
 	/// <returns></returns>
-	[HttpPut("{playlistId}/addSong/{songId}")]
+	[HttpPost("{playlistId}/addSong/{songId}")]
 	[Authorize]
 	public async Task<ActionResult<Playlist>> AddSongToPlaylist(uint playlistId, uint songId)
 	{
@@ -91,6 +108,7 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 		{
 			return NotFound(playlistId);
 		}
+
 		Song? song = await repository.Songs.FindAsync(songId);
 		if ( song is null )
 		{
@@ -132,6 +150,7 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 		{
 			return NotFound(playlistId);
 		}
+		
 		Song? song = await repository.Songs.FindAsync(songId);
 		if ( song is null )
 		{
@@ -157,30 +176,31 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 	/// <returns>
 	/// The updated playlist
 	/// </returns>
-	[HttpPut("{id}")]
+	[HttpPatch("{id}")]
 	[Authorize]
-	public async Task<ActionResult<Playlist>> UpdatePlaylist(uint id, [FromForm] Playlist playlist)
+	public async Task<ActionResult<Playlist>> UpdatePlaylist(uint id, [FromForm] string? name, [FromForm] uint? authorId)
 	{
-		if (playlist is null)
+		if (name is null && authorId is null)
 		{
 			return BadRequest();
 		}
 
-		Playlist? current = await repository.Playlists.Include(p => p.Songs).FirstOrDefaultAsync(p => p.Id == id);
-		if ( current is null )
+		Playlist? playlist = await repository.Playlists.Include(p => p.Songs).FirstOrDefaultAsync(p => p.Id == id);
+		if ( playlist is null )
 		{
 			return NotFound();
 		}
 
-		if ( ! VerifyOwnershipOrAuthZ(current.AuthorId, ProjectMana.User.Authorizations.EditAnyPlaylist, out ActionResult<Playlist> error) )
+		if ( ! VerifyOwnershipOrAuthZ(playlist.AuthorId, ProjectMana.User.Authorizations.EditAnyPlaylist, out ActionResult<Playlist> error) )
 		{
 			return error;
 		}
 
-		EntityEntry<Playlist> updated = repository.Playlists.Update( current.WithUpdatesFrom(playlist) );
+		playlist.Name = name ?? playlist.Name;
+		playlist.AuthorId = authorId ?? playlist.AuthorId;
 
 		repository.SaveChanges();
-		return Ok(updated);
+		return Ok(playlist);
 	}
 
 	/// <summary>

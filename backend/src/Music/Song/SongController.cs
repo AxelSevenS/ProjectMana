@@ -19,8 +19,8 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 	/// All Songs
 	/// </returns>
 	[HttpGet]
-	public async Task<List<Song>> GetAll() =>
-		await repository.Songs.ToListAsync();
+	public async Task<ActionResult<List<Song>>> GetAll() =>
+		Ok(await repository.Songs.ToListAsync());
 
 	/// <summary>
 	/// Get all Songs
@@ -29,8 +29,13 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 	/// All Songs
 	/// </returns>
 	[HttpGet("fromPlaylist/{playlistId}")]
-	public async Task<List<Song>> GetAllInPlaylist(uint playlistId) =>
-		[.. (await repository.Playlists.Include(p => p.Songs).FirstOrDefaultAsync(p => p.Id == playlistId))?.Songs];
+	public async Task<ActionResult<List<Song>>> GetAllInPlaylist(uint playlistId) =>
+		await repository.Playlists.Include(p => p.Songs)
+			.FirstOrDefaultAsync(p => p.Id == playlistId) switch
+		{
+			Playlist playlist => Ok(playlist.Songs),
+			null => NotFound()
+		};
 
 	/// <summary>
 	/// Get a song by id
@@ -44,6 +49,21 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 		await repository.Songs.FindAsync(id) switch
 		{
 			Song song => Ok(song),
+			null => NotFound(),
+		};
+
+	/// <summary>
+	/// Get songs by their author's id
+	/// </summary>
+	/// <param name="id">The id of the song author</param>
+	/// <returns>
+	/// The playlists with the given author id
+	/// </returns>
+	[HttpGet("byAuthor/{id}")]
+	public async Task<ActionResult<List<Song>>> GetByAuthorId(uint id) =>
+		repository.Songs.Where(s => s.AuthorId == id) switch
+		{
+			IQueryable<Song> songQuery => Ok(await songQuery.ToListAsync()),
 			null => NotFound(),
 		};
 
@@ -128,30 +148,31 @@ public class SongController(AppDbContext repo) : Controller<Song>(repo)
 	/// <returns>
 	/// The updated song
 	/// </returns>
-	[HttpPut("{id}")]
+	[HttpPatch("{id}")]
 	[Authorize]
-	public async Task<ActionResult<Song>> UpdateSong(uint id, [FromForm] Song song)
+	public async Task<ActionResult<Song>> UpdateSong(uint id, [FromForm] string? name, [FromForm] uint? authorId)
 	{
-		if (song is null)
+		if (name is null && authorId is null)
 		{
 			return BadRequest();
 		}
-
-		Song? current = await repository.Songs.FindAsync(id);
-		if ( current is null )
+		
+		Song? song = await repository.Songs.FindAsync(id);
+		if ( song is null )
 		{
 			return NotFound();
 		}
 
-		if ( ! VerifyOwnershipOrAuthZ(current.AuthorId, ProjectMana.User.Authorizations.EditAnySong, out ActionResult<Song> result) )
+		if ( ! VerifyOwnershipOrAuthZ(song.AuthorId, ProjectMana.User.Authorizations.EditAnySong, out ActionResult<Song> result) )
 		{
 			return result;
 		}
 
-		EntityEntry<Song> updated = repository.Songs.Update( current.WithUpdatesFrom(song) );
+		song.Name = name ?? song.Name;
+		song.AuthorId = authorId ?? song.AuthorId;
 
 		repository.SaveChanges();
-		return Ok(updated);
+		return Ok(song);
 	}
 
 	/// <summary>

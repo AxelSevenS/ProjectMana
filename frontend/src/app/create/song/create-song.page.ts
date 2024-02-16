@@ -1,20 +1,21 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
+import { first } from 'rxjs';
 import { SongService } from 'src/app/song/song.service';
 
 @Component({
-  selector: 'app-mark',
-  templateUrl: 'mark.page.html',
-  styleUrls: ['mark.page.scss']
+  selector: 'app-create-song',
+  templateUrl: 'create-song.page.html',
+  styleUrls: ['create-song.page.scss']
 })
-export class MarkPage {
+export class CreateSongPage {
 
   publishSongForm: FormGroup = this.formBuilder.group(
     {
       name: ['', Validators.required],
-      description: ['', Validators.required],
       file: [null, Validators.required]
     }
   );
@@ -43,13 +44,12 @@ export class MarkPage {
 
     this.songService.createSong(
       this.publishSongForm.controls['name'].value, 
-      this.publishSongForm.controls['description'].value, 
       this.file
     )
-      .subscribe(res => {
-        if (res) {
-          this.router.navigate(['/song', res.id]);
-        }
+      .subscribe(song => {
+        if (song instanceof HttpErrorResponse) return;
+        
+        this.router.navigate(['/songs', song.id]);
       })
   }
 }

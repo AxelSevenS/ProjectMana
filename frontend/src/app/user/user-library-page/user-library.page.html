@@ -1,19 +1,29 @@
-<ion-content *ngIf="song && user" [fullscreen]="true">
-  <ion-header>
-    <ion-toolbar>
-      <ion-title>
-        <ng-template [ngIf]="isOwner" [ngIfElse]="notOwner">Votre Gallerie</ng-template>
-        <ng-template #notOwner>Gallerie de {{ user.username }}</ng-template>
-      </ion-title>
-    </ion-toolbar>
-  </ion-header>
-  <ion-list>
-    <ng-template *ngFor="let song of this.song" [ngIf]="song">
-      <app-song [song]="song"></app-song>
-    </ng-template>
+<ng-template [ngIf]="user">
+  <ion-content>
+    <ng-template [ngIf]="songs && songs.length != 0">
+      
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>
+            <ng-template [ngIf]="this.authentication.user?.id == this.requestId" [ngIfElse]="notOwner">Votre Galerie</ng-template>
+            <ng-template #notOwner>Galerie de {{ user.username }}</ng-template>
+          </ion-title>
+        </ion-toolbar>
+      </ion-header>
 
-    <ion-infinite-scroll (ionInfinite)="onInfiniteScroll($event)">
-      <ion-infinite-scroll-content></ion-infinite-scroll-content>
-    </ion-infinite-scroll>
-  </ion-list>
-</ion-content>
+      <app-song-list [songs]="songs"></app-song-list>
+
+    </ng-template>
+    <ng-template [ngIf]="songs === null || songs?.length == 0">
+
+      <ion-title>
+        <h1>
+          <ng-template [ngIf]="this.authentication.user?.id == this.requestId" [ngIfElse]="notOwner">Votre Galerie est vide</ng-template>
+          <ng-template #notOwner>La Galerie de {{ user.username }} est vide</ng-template>
+        </h1>
+        <ion-text>Pour l'instant...</ion-text>
+      </ion-title>
+      
+    </ng-template>
+  </ion-content>
+</ng-template>

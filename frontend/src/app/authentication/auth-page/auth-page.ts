@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthenticationService } from '../authentication.service';
 import { Router } from '@angular/router';
 import { AuthenticationValidators } from '../authentication-utility';
+import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-auth-page',
@@ -13,14 +15,13 @@ import { AuthenticationValidators } from '../authentication-utility';
 export class AuthPage implements OnInit {
 
   loginForm: FormGroup = this.formBuilder.group({
-    email: ['', Validators.compose([Validators.required, Validators.email])],
+    username: ['', /* Validators.compose([ */Validators.required/* , Validators.username]) */],
     password: ['', Validators.required],
   });
 
   registerForm: FormGroup = this.formBuilder.group(
     {
-      fullName: ['', Validators.required],
-      email: ['', Validators.compose([Validators.required, Validators.email])],
+      username: ['', /* Validators.compose([ */Validators.required, /* Validators.email]) */],
       password: ['', Validators.compose([Validators.required, AuthenticationValidators.securePasswordValidator])],
       passwordConfirm: ['', Validators.compose([Validators.required, AuthenticationValidators.securePasswordValidator])],
     }, {
@@ -39,22 +40,27 @@ export class AuthPage implements OnInit {
   ngOnInit() {}
 
   login() {
-    this.authenticationService.login(this.loginForm.controls["email"].value, this.loginForm.controls["password"].value)
+    this.authenticationService.login(this.loginForm.controls["username"].value, this.loginForm.controls["password"].value)
       .subscribe(u => {
-        if (u !== null) {
-          this.router.navigate([''])
-            .then(() => window.location.reload())
-        }
+        if (u instanceof HttpErrorResponse) return;
+
+        this.router.navigate([''])
+          .then(() => window.location.reload())
       })
   }
 
   register() {
-    this.authenticationService.register(this.registerForm.controls["email"].value, this.registerForm.controls["password"].value)
+    let username = this.registerForm.controls["username"].value;
+    let password = this.registerForm.controls["password"].value;
+    this.authenticationService.register(username, password)
       .subscribe(u => {
-        if (u !== null) {
-          this.router.navigate([''])
-            .then(() => window.location.reload())
-        }
+        if (u instanceof HttpErrorResponse) { return };
+
+        this.authenticationService.login(username, password)
+          .subscribe(() => {
+            this.router.navigate([''])
+              .then(() => window.location.reload())
+          })
       })
   }
 

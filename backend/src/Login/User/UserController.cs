@@ -93,11 +93,11 @@ public class UserController(AppDbContext repo, JwtOptions jwtOptions) : Controll
 	/// <returns>
 	/// The updated user
 	/// </returns>
-	[HttpPut("{id}")]
+	[HttpPatch("{id}")]
 	[Authorize]
-	public async Task<ActionResult<User>> UpdateUser(uint id, [FromForm] User user)
+	public async Task<ActionResult<User>> UpdateUser(uint id, [FromForm] string? username, [FromForm] string? password, [FromForm] User.Authorizations? roles)
 	{
-		if (user is null)
+		if (username is null && password is null && roles is null)
 		{
 			return BadRequest();
 		}
@@ -107,16 +107,21 @@ public class UserController(AppDbContext repo, JwtOptions jwtOptions) : Controll
 			return error;
 		}
 
-		User? current = await repository.Users.FindAsync(id);
-		if ( current is null )
+		User? user = await repository.Users.FindAsync(id);
+		if ( user is null )
 		{
 			return NotFound();
 		}
 
-		EntityEntry<User> updated = repository.Users.Update( current.WithUpdatesFrom(user) );
+		user.Username = username ?? user.Username;
+		user.Password = password is not null ? jwtOptions.HashPassword(password) : user.Password;
+
+		if ( roles is User.Authorizations auth && VerifyAuthorization(ProjectMana.User.Authorizations.EditUserAuths | auth) ) {
+			user.Auth = auth;
+		}
 
 		repository.SaveChanges();
-		return Ok(updated.Entity);
+		return Ok(user);
 	}
 
 	/// <summary>

@@ -5,6 +5,8 @@ import { AuthenticationService } from 'src/app/authentication/authentication.ser
 import { Song } from 'src/app/song/song.model';
 import { SongService } from 'src/app/song/song.service';
 import { UserService } from '../user.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
 
 @Component({
   selector: 'app-user-library',
@@ -13,15 +15,14 @@ import { UserService } from '../user.service';
 })
 export class UserLibraryPage implements OnInit {
 
-  public get isOwner(): boolean { return this._authentication.user?.id == this.requestId }
-  public get isAdmin(): boolean { return this._authentication.user?.roles == "Admin" }
+  public get authentication() { return this._authentication }
   public get requestId(): number { return this.activatedRoute.snapshot.params['id'] }
 
   public get user() { return this._user }
   private _user?: User | null;
 
-  public get song() { return this._song }
-  private _song?: Song[] | null;
+  public get songs() { return this._songs }
+  private _songs?: Song[] | null;
 
 
 
@@ -35,11 +36,17 @@ export class UserLibraryPage implements OnInit {
   ngOnInit(): void {
     this.userService.getUserById(this.requestId)
       .subscribe(user => {
+        this._user = null;
+        if (user instanceof HttpErrorResponse) return;
+
         this._user = user;
       })
-    this.songService.getSongByAuthorId(this.requestId)
-      .subscribe(song => {
-        this._song = song;
+    this.songService.getSongsByAuthorId(this.requestId)
+      .subscribe(songs => {
+        this._songs = null;
+        if (songs instanceof HttpErrorResponse) return;
+
+        this._songs = songs;
       });
   }
 

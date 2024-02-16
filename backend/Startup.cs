@@ -9,8 +9,18 @@ namespace ProjectMana;
 
 public class Startup(IConfiguration Configuration)
 {
+	// private const string corsPolicyName = "_allowFromLocal";
 	public void ConfigureServices(IServiceCollection services)
     {
+		// services.AddCors(options =>
+		// {
+		// 	options.AddPolicy(name: corsPolicyName,
+		// 		policy  =>
+		// 		{
+		// 			policy.WithOrigins("http://localhost");
+		// 		});
+		// });
+
 		JwtOptions jwtOptions = Configuration.GetSection(JwtOptions.Jwt)
 			.Get<JwtOptions>()!;
 
@@ -36,6 +46,8 @@ public class Startup(IConfiguration Configuration)
 				#else
 					options.RequireHttpsMetadata = true;
 				#endif
+				
+				options.MapInboundClaims = false;
 			
 				options.SaveToken = true;
 				options.TokenValidationParameters = new TokenValidationParameters
@@ -60,8 +72,8 @@ public class Startup(IConfiguration Configuration)
 			{
 				// policy.RequireAssertion(context => true);
 				policy.RequireAuthenticatedUser();
-				policy.RequireClaim(ClaimTypes.NameIdentifier);
-				policy.RequireClaim(ClaimTypes.Role);
+				policy.RequireClaim(JwtRegisteredClaimNames.Sub);
+				policy.RequireClaim(JwtOptions.RoleClaim);
 			});
     }
 
@@ -70,13 +82,12 @@ public class Startup(IConfiguration Configuration)
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
-            
-            app.UseCors(builder => builder
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader()
-            );
         }
+		app.UseCors(builder => builder
+			.AllowAnyOrigin()
+			.AllowAnyMethod()
+			.AllowAnyHeader()
+		);
 
         app.UseHttpsRedirection();
         // app.UseStaticFiles(

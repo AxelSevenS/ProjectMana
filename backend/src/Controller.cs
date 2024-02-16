@@ -18,12 +18,9 @@ public abstract class Controller<TData>(AppDbContext repository) : ControllerBas
 	/// <returns>True if the user is authenticated and holds the authorization(s), False if the user is not authenticated or doesn't hold the authorization(s)</returns>
 	protected bool VerifyAuthorization(UserAuth authorizations)
 	{
-		if (
-			HttpContext.User.FindFirst(ClaimTypes.Role)?.Value is string claim &&
-			Enum.TryParse(claim, out UserAuth auth)
-		)
+		if ( HttpContext.User.FindFirst(JwtOptions.RoleClaim)?.Value is string claim )
 		{
-			return (auth & authorizations) == authorizations;
+			return (claim.GetAuths() & authorizations) == authorizations;
 		}
 
 		return false;
@@ -38,7 +35,7 @@ public abstract class Controller<TData>(AppDbContext repository) : ControllerBas
 	{
 		id = 0;
 		if (
-			HttpContext.User.FindFirst(ClaimTypes.NameIdentifier) is Claim claim &&
+			HttpContext.User.FindFirst(JwtRegisteredClaimNames.Sub) is Claim claim &&
 			uint.TryParse(Encoding.UTF8.GetBytes(claim.Value), out id)
 		)
 		{

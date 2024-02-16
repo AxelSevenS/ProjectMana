@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, catchError, map, of, share } from 'rxjs';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { JwtPayload, jwtDecode } from 'jwt-decode';
-import { User } from '../user/user.model';
+import { User, UserAuths } from '../user/user.model';
 import { Router } from '@angular/router';
+import { UserService } from '../user/user.service';
 
 export declare type LoginState = 'loggedIn' | 'loggedOut' | 'disconnected';
 
@@ -15,17 +16,17 @@ export class AuthenticationService {
 
   public static readonly storageKey: string = "JWT";
 
+  public get state() { return this._state }
   private _state: LoginState;
-  public get state() : LoginState {
-    return this._state;
-  }
 
   private _user: User | null = null;
-  public get user() : User | null {
-    return this._user;
-  }
+  public get user() { return this._user }
+
+  private _auths: UserAuths = this.userService.getAuths(undefined);
+  public get auths() { return this._auths }
 
   constructor(
+    private userService: UserService,
     private http: HttpClient,
     private router: Router
   ) {
@@ -41,10 +42,12 @@ export class AuthenticationService {
     }
 
     this._user = user;
+    this._auths = this.userService.getAuths(this._user.roles);
     this._state = 'loggedIn';
   }
 
-  login(username: string, password: string) {
+
+  login(username: string, password: string): Observable<User | HttpErrorResponse> {
     const formData = new FormData();
     formData.append('username', username);
     formData.append('password', password);
@@ -52,26 +55,27 @@ export class AuthenticationService {
     const headers = new HttpHeaders({ 'enctype': 'multipart/form-data' });
 
     return this.http.post<string>(`${environment.host}/api/users/auth/`, formData, {headers: headers})
-      .pipe( 
+      .pipe(
+        share(),
         map(res => {
           this._user = this.jwtToUser(res);
           if (this._user === null) throw new HttpErrorResponse({ error: 400 });
           
           localStorage.setItem(AuthenticationService.storageKey, res);
           this._state = 'loggedIn';
+          this._auths = this.userService.getAuths(this._user.roles);
           return this._user;
         }), 
-        catchError(err => {
+        catchError((err: HttpErrorResponse) => {
           this._user = null;
-          if (err instanceof HttpErrorResponse) {
-            this._state = err.error == 0 ? 'disconnected' : 'loggedOut';
-          }
-          return of(this._user);
+          this._state = err.error == 0 ? 'disconnected' : 'loggedOut';
+          this._auths = this.userService.getAuths(undefined);
+          return of(err);
         })
       );
   }
 
-  register(username: string, password: string) {
+  register(username: string, password: string): Observable<User | HttpErrorResponse> {
     const formData = new FormData();
     formData.append('username', username);
     formData.append('password', password);
@@ -80,7 +84,8 @@ export class AuthenticationService {
 
     return this.http.put<User>(`${environment.host}/api/users/`, formData, {headers: headers})
       .pipe(
-        catchError(err => of(null) )
+        share(),
+        catchError((err: HttpErrorResponse) => of(err) )
       );
   }
 
@@ -88,19 +93,24 @@ export class AuthenticationService {
     this._user = null;
     this._state = 'loggedOut';
     localStorage.removeItem(AuthenticationService.storageKey);
-    this.router.navigate(['']);
+    
+    this.router.navigate([''])
+      .then(() => {
+        window.location.reload();
+      });
   }
 
   private jwtToUser(token: string): User | null {
     let decoded = jwtDecode<UserPayload>(token);
     if ( 
-      ! decoded.sub ||
-      ! decoded.name ||
-      ! decoded.roles ||
-      ! decoded.exp ||
+      decoded.sub === undefined ||
+      decoded.name === undefined ||
+      decoded.roles === undefined ||
+      decoded.exp === undefined ||
       decoded.exp <= Math.floor(Date.now() / 1000)
-    )
+    ) {
       return null;
+    }
     
     return {
       id: parseInt(decoded.sub),
@@ -114,5 +124,5 @@ export class AuthenticationService {
 interface UserPayload extends JwtPayload {
   sub?: string,
   name?: string,
-  roles?: "Admin" | "Client"
+  roles?: string
 }

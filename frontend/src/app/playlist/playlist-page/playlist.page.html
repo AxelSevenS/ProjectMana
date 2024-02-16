@@ -1,0 +1,51 @@
+<ion-content *ngIf="playlist">
+
+  <ion-grid>
+    <ion-row>
+
+      <ion-col>
+        <form [formGroup]="editPlaylistForm" (submit)="onSubmit()">
+          <ion-list>
+            <ng-template [ngIf]="this.authentication.user?.id == playlist.authorId || this.authentication.auths.PlaylistEditor" [ngIfElse]="isNotOwner">
+              <ion-item lines="full">
+                <ion-input formControlName="name" type="text" label="Nom" labelPlacement="floating"></ion-input>
+              </ion-item>
+            </ng-template>
+            
+            <ng-template #isNotOwner>
+              <ion-item lines="full">
+                <ion-label position="stacked">Nom</ion-label>
+                <ion-text>{{ this.playlist }}</ion-text>
+              </ion-item>
+            </ng-template>
+          </ion-list>
+          
+          <ion-grid>
+            <ion-row *ngIf="this.authentication.user?.id == playlist.authorId || this.authentication.auths.PlaylistEditor">
+              <ion-col>
+                <ion-button type="submit" expand="block">
+                  Sauvegarder
+                </ion-button>
+              </ion-col>
+            </ion-row>
+            
+            <ion-row *ngIf="this.authentication.user?.id == playlist.authorId || this.authentication.auths.PlaylistDeleter">
+              <ion-col>
+                <ion-button (click)="delete()" color="danger" expand="block">
+                  <ion-icon slot="start" name="trash-outline"></ion-icon>
+                  Supprimer
+                </ion-button>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </form>
+      </ion-col>
+
+      <ion-col>
+        <app-song-list [songs]="playlist.songs"></app-song-list>
+      </ion-col>
+      
+    </ion-row>
+  </ion-grid>
+    
+</ion-content>

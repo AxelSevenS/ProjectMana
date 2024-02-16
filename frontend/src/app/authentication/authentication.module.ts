@@ -14,9 +14,6 @@ import { AuthenticationService } from './authentication.service';
     ReactiveFormsModule,
     IonicModule.forRoot()
   ],
-  providers: [
-    AuthenticationService,
-  ],
   declarations: [AuthPage],
   exports: [AuthPage]
 })
