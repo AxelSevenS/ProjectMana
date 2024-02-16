@@ -4,6 +4,10 @@ import { Song } from '../song.model';
 import { AuthenticationService } from 'src/app/authentication/authentication.service';
 import { AlertController } from '@ionic/angular';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
+import { PlaylistService } from 'src/app/playlist/playlist.service';
+import { Playlist } from 'src/app/playlist/playlist.model';
+import { UserPlaylistsProvider } from 'src/app/playlist/user-playlists.provider';
 
 @Component({
   selector: 'app-song',
@@ -20,16 +24,16 @@ export class SongComponent implements OnInit {
   private _optionId = new Date().getTime().toString();
 
   public get authentication() { return this._authentication }
+  public get userPlaylists() { return this._userPlaylists }
 
   public get fileUrl() { return this._fileUrl }
   private _fileUrl?: string | null;
 
-  public get mimeType() { return this._mimeType }
-  private _mimeType?: string | null;
-
   constructor(
     private _authentication: AuthenticationService,
     private songService: SongService,
+    private _playlistService: PlaylistService,
+    private _userPlaylists: UserPlaylistsProvider,
     private alertController: AlertController
   ) { }
 
@@ -38,6 +42,7 @@ export class SongComponent implements OnInit {
       this.songService.getSongById(this.id)
         .subscribe(song => {
           if (song instanceof HttpErrorResponse) return;
+
           this.song = song;
           this._fileUrl = this.songService.getSongFileUrl(this.song);
         })
@@ -45,9 +50,18 @@ export class SongComponent implements OnInit {
       this.id = this.song.id;
       this._fileUrl = this.songService.getSongFileUrl(this.song);
     }
-  }
 
-  private updateSongData() {
+		this.songService.eventRemoved
+			.subscribe(song => {
+				if ( this.song?.id != song.id ) return;
+        this.song = null;
+			});
+			
+    this.songService.eventUpdated
+			.subscribe(song => {
+        if ( this.song?.id != song.id ) return;
+        this.song = song;
+			});
   }
 
   async delete() {
@@ -55,19 +69,58 @@ export class SongComponent implements OnInit {
 
     this.songService.deleteSongById(this.song.id)
       .subscribe(async res => {
-        if (res) {
-          this.song = undefined;
+        if (res instanceof HttpErrorResponse) {
+          const alert = await this.alertController.create({
+            header: 'Erreur lors de la Suppression de la Chanson',
+            message: `La Suppression de la Chanson a échoué (erreur ${res.statusText})`,
+            buttons: ['Ok'],
+          });
+          
+          await alert.present();
           return;
         }
-
-        const alert = await this.alertController.create({
-          header: 'Erreur lors de la Suppression du Média',
-          message: 'La suppression du Média a échoué',
-          buttons: ['Ok'],
-        });
-    
-        await alert.present();
       });
+  }
+
+  togglePlaylist(e: any, playlist: Playlist) {
+    // ion-checkbox's "checked" binding is reversed for some dumbass reason
+    let isChecked: boolean = ! e.target.checked;
+
+    if (isChecked) {
+      this._playlistService.addSongById(playlist.id, this.song!.id)
+        .subscribe(async res => {
+          if (res instanceof HttpErrorResponse) {
+            const alert = await this.alertController.create({
+              header: 'Erreur lors de l\'Ajout de la Chanson à la Playlist',
+              message: `L\'Ajout de la Chanson à la Playlist a échoué (erreur ${res.statusText})`,
+              buttons: ['Ok'],
+            });
+            
+            await alert.present();
+            e.target.checked = !isChecked;
+            return;
+          }
+        });
+    } else {
+      this._playlistService.removeSongById(playlist.id, this.song!.id)
+        .subscribe(async res => {
+          if (res instanceof HttpErrorResponse) {
+            const alert = await this.alertController.create({
+              header: 'Erreur lors de la Suppression de la Chanson de la Playlist',
+              message: `La Suppression de la Chanson de la Playlist a échoué (erreur ${res.statusText})`,
+              buttons: ['Ok'],
+            });
+            
+            await alert.present();
+            e.target.checked = !isChecked;
+            return;
+          }
+        });
+    }
+  }
+
+  playlistContainsSong(playlist: Playlist) {
+    return playlist.songs.find(s => this.song && s.id === this.song.id) !== undefined;
   }
 
 }

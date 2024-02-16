@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { User, UserAuths } from './user.model';
-import { Observable, catchError, of } from 'rxjs';
+import { Observable, Subject, catchError, map, of, share } from 'rxjs';
 import { AuthenticationService } from '../authentication/authentication.service';
 
 export declare type AuthenticationState = 'loggedIn' | 'loggedOut' | 'disconnected';
@@ -12,6 +12,15 @@ export declare type AuthenticationState = 'loggedIn' | 'loggedOut' | 'disconnect
 })
 export class UserService {
 
+  public get eventAdded() { return this._eventAdded };
+  private _eventAdded: Subject<User> = new Subject<User>;
+
+  public get eventRemoved() { return this._eventRemoved };
+  private _eventRemoved: Subject<User> = new Subject<User>;
+
+  public get eventUpdated() { return this._eventUpdated };
+  private _eventUpdated: Subject<User> = new Subject<User>;
+  
   constructor(
     private http: HttpClient
   ) { }
@@ -67,16 +76,54 @@ export class UserService {
 
   getUsers(): Observable<User[] | HttpErrorResponse> {
     return this.http.get<User[]>(`${environment.host}/api/users`)
-      .pipe( catchError((err: HttpErrorResponse) => {
-        return of(err);
-      }));
+      .pipe(
+        share(),
+        catchError( (err: HttpErrorResponse) => of(err) ),
+      );
   }
 
   getUserById(id: number): Observable<User | HttpErrorResponse> {
     return this.http.get<User>(`${environment.host}/api/users/${id}`)
-      .pipe( catchError((err: HttpErrorResponse) => {
-        return of(err);
-      }));
+      .pipe(
+        share(),
+        catchError( (err: HttpErrorResponse) => of(err) ),
+      );
+  }
+
+  authenticateUserByUsernameAndPassword(username: string, password: string): Observable<string | HttpErrorResponse> {
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('password', password);
+
+    const headers = new HttpHeaders({ 'enctype': 'multipart/form-data' });
+
+    return this.http.post<string>(`${environment.host}/api/users/auth/`, formData, {headers: headers})
+      .pipe(
+        share(),
+        catchError( (err: HttpErrorResponse) => of(err) ),
+      );
+  }
+
+  createUser(username: string, password: string): Observable<User | HttpErrorResponse> {
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('password', password);
+
+    const headers = new HttpHeaders({ 'enctype': 'multipart/form-data' });
+
+    let observable = this.http.put<User>(`${environment.host}/api/users/`, formData, {headers: headers})
+      .pipe(
+        share(),
+        catchError( (err: HttpErrorResponse) => of(err) ),
+      );
+
+    observable
+      .subscribe(res => {
+        if (res instanceof HttpErrorResponse) return;
+        this._eventAdded.next(res);
+      });
+    
+    return observable;
   }
 
   updateUserById(id: number, user: Partial<User>): Observable<User | HttpErrorResponse> {
@@ -89,12 +136,36 @@ export class UserService {
 
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
 
-    console.log(formData, headers);
+    let observable = this.http.patch<User>(`${environment.host}/api/users/${id}`, formData, {headers: headers})
+      .pipe(
+        share(),
+        catchError( (err: HttpErrorResponse) => of(err) ),
+      );
 
-    return this.http.patch<User>(`${environment.host}/api/users/${id}`, formData, {headers: headers})
-      .pipe( catchError((err: HttpErrorResponse) => {
-        return of(err);
-      }));
+    observable
+      .subscribe(res => {
+        if (res instanceof HttpErrorResponse) return;
+        this._eventUpdated.next(res);
+      });
+    
+    return observable;
   }
 
+  deleteUserById(id: number): Observable<User | HttpErrorResponse> {
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem(AuthenticationService.storageKey)}` });
+
+    let observable = this.http.delete<User>(`${environment.host}/api/users/${id}`, {headers: headers})
+      .pipe(
+        share(),
+        catchError( (err: HttpErrorResponse) => of(err) ),
+      );
+
+    observable
+      .subscribe(res => {
+        if (res instanceof HttpErrorResponse) return;
+        this._eventRemoved.next(res);
+      });
+    
+    return observable;
+  }
 }

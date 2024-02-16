@@ -3,10 +3,11 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import { PlaylistListPage } from './playlist-list-page/playlist-list.page';
+import { PlaylistListComponent } from './playlist-list/playlist-list.component';
 import { PlaylistPage } from './playlist-page/playlist.page';
 import { PlaylistComponent } from './playlist/playlist.component';
 import { RouterModule } from '@angular/router';
+import { SongModule } from '../song/song.module';
 
 @NgModule({
   imports: [
@@ -14,10 +15,11 @@ import { RouterModule } from '@angular/router';
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    SongModule
   ],
-  declarations: [PlaylistListPage, PlaylistPage, PlaylistComponent],
-  exports: [PlaylistListPage, PlaylistPage, PlaylistComponent],
+  declarations: [PlaylistListComponent, PlaylistPage, PlaylistComponent],
+  exports: [PlaylistListComponent, PlaylistComponent],
 })
 export class PlaylistModule {
 }

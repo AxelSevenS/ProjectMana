@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
+import { first } from 'rxjs';
 import { SongService } from 'src/app/song/song.service';
 
 @Component({
@@ -45,9 +46,19 @@ export class CreateSongPage {
       this.publishSongForm.controls['name'].value, 
       this.file
     )
-      .subscribe(song => {
-        if (song instanceof HttpErrorResponse) return;
-        this.router.navigate(['/songs', song.id]);
+      .subscribe(async res => {
+        if (res instanceof HttpErrorResponse) {
+          const alert = await this.alertController.create({
+            header: 'Erreur lors de la Création de Chanson',
+            message: `La Création de Chanson a échoué (erreur ${res.statusText})`,
+            buttons: ['Ok'],
+          });
+          
+          await alert.present();
+          return;
+        }
+        
+        this.router.navigate(['/songs', res.id]);
       })
   }
 }

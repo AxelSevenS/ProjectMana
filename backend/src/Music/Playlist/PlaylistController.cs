@@ -29,7 +29,8 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 	/// </returns>
 	[HttpGet("byAuthor/{id}")]
 	public async Task<ActionResult<List<Song>>> GetByAuthorId(uint id) =>
-		repository.Playlists.Where(s => s.AuthorId == id) switch
+		repository.Playlists.Include(p => p.Songs)
+			.Where(s => s.AuthorId == id) switch
 		{
 			IQueryable<Playlist> songQuery => Ok(await songQuery.ToListAsync()),
 			null => NotFound(),
@@ -43,7 +44,8 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 	/// </returns>
 	[HttpGet("withSong/{songId}")]
 	public async Task<List<Playlist>> GetAllWithSong(uint songId) =>
-		await repository.Playlists.Include(p => p.Songs).Where(p => p.Songs.Any(s => s.Id == songId)).ToListAsync();
+		await repository.Playlists.Include(p => p.Songs)
+			.Where(p => p.Songs.Any(s => s.Id == songId)).ToListAsync();
 
 	/// <summary>
 	/// Get a song by id
@@ -71,7 +73,7 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 	/// </returns>
 	[HttpPut]
 	[Authorize]
-	public async Task<ActionResult<Playlist>> AddPlaylist([FromForm]string name)
+	public async Task<ActionResult<Playlist>> AddPlaylist([FromForm] string name)
 	{
 		if ( ! VerifyAuthZ(ProjectMana.User.Authorizations.CreatePlaylists, out uint authorId, out ActionResult<Playlist> error) )
 		{
@@ -96,7 +98,7 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 	/// <param name="playlistId"></param>
 	/// <param name="songId"></param>
 	/// <returns></returns>
-	[HttpPut("{playlistId}/addSong/{songId}")]
+	[HttpPost("{playlistId}/addSong/{songId}")]
 	[Authorize]
 	public async Task<ActionResult<Playlist>> AddSongToPlaylist(uint playlistId, uint songId)
 	{
@@ -106,6 +108,7 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 		{
 			return NotFound(playlistId);
 		}
+
 		Song? song = await repository.Songs.FindAsync(songId);
 		if ( song is null )
 		{
@@ -147,6 +150,7 @@ public class PlaylistController(AppDbContext repo) : Controller<Playlist>(repo)
 		{
 			return NotFound(playlistId);
 		}
+		
 		Song? song = await repository.Songs.FindAsync(songId);
 		if ( song is null )
 		{

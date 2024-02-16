@@ -16,48 +16,116 @@
         
       <div class="card-front">
         <form [formGroup]="loginForm" (ngSubmit)="login()" class="card-content">
-          <ion-card-header>
-            <ion-card-title color="primary">Se Connecter</ion-card-title>
-          </ion-card-header>
-          
-          <ion-item>
-            <ion-icon color="primary" size="medium" name="at-outline"></ion-icon>
-            <ion-input formControlName="username" type="text" [clearOnEdit]="false" placeholder="Nom d'Utilisateur"></ion-input>
-          </ion-item>
-          
-          <ion-item>
-            <ion-icon color="primary" size="medium" name="lock-closed-outline"></ion-icon>
-            <ion-input formControlName="password" type="password" [clearOnEdit]="false" placeholder="Mot de Passe"></ion-input>
-          </ion-item>
-          
-          <ion-button type="submit" expand="block">Se Connecter</ion-button>
-          
-          <p class="mb-0 mt-4 text-center"><a href="https://www.web-leb.com/code" class="link">Forgot your password?</a></p>
+    
+          <ion-grid class="form-contents">
+
+            <ion-card-header>
+              <ion-card-title color="primary">Se Connecter</ion-card-title>
+            </ion-card-header>
+
+            <ion-row>
+              <ion-col>
+                <ion-item>
+                  <ion-icon slot="start" color="primary" size="medium" name="at-outline"></ion-icon>
+                  <ion-input formControlName="username" type="text" [clearOnEdit]="false" placeholder="Nom d'Utilisateur"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+            <ion-row>
+              <ion-col>
+                <ion-item>
+                  <ion-icon slot="start" color="primary" size="medium" name="lock-closed-outline"></ion-icon>
+                  <ion-input formControlName="password" type="password" [clearOnEdit]="false" placeholder="Mot de Passe"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+            <ion-row>
+              <ion-col>
+                <ion-button type="submit" expand="block">Se Connecter</ion-button>
+              </ion-col>
+            </ion-row>
+
+          </ion-grid>
+
         </form>
       </div>
       
       <div class="card-back">
         <form [formGroup]="registerForm" (ngSubmit)="register()" class="card-content">
-          <ion-card-header>
-            <ion-card-title color="primary">S'Inscrire</ion-card-title>
-          </ion-card-header>
+
+          <ion-grid>
+
+            <ion-card-header>
+              <ion-card-title color="primary">S'Inscrire</ion-card-title>
+            </ion-card-header>
+            
+            <ion-row>
+
+              <ion-col class="form-contents">
+                <ion-row>
+                  <ion-col>
+                    <ion-item>
+                      <ion-icon slot="start" color="primary" size="medium" name="person-outline"></ion-icon>
+                      <ion-input formControlName="username" type="text" [clearOnEdit]="false" placeholder="Nom d'Utilisateur"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
           
-          <ion-item>
-            <ion-icon color="primary" size="medium" name="person-outline"></ion-icon>
-            <ion-input formControlName="username" type="text" [clearOnEdit]="false" placeholder="Nom d'Utilisateur"></ion-input>
-          </ion-item>
-          
-          <ion-item>
-            <ion-icon color="primary" size="medium" name="lock-closed-outline"></ion-icon>
-            <ion-input formControlName="password" type="password" [clearOnEdit]="false" placeholder="Mot de Passe"></ion-input>
-          </ion-item>
-          
-          <ion-item>
-            <ion-icon color="primary" size="medium" name="checkmark-outline"></ion-icon>
-            <ion-input formControlName="passwordConfirm" type="password" [clearOnEdit]="false" placeholder="Confirmer Mot de Passe"></ion-input>
-          </ion-item>
-          
-          <ion-button type="submit" expand="block">S'Inscrire</ion-button>
+                <ion-row>
+                  <ion-col>
+                    <ion-item>
+                      <ion-icon slot="start" color="primary" size="medium" name="lock-closed-outline"></ion-icon>
+                      <ion-input formControlName="password" type="password" [clearOnEdit]="false" placeholder="Mot de Passe"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+                
+                <ion-row>
+                  <ion-col>
+                    <ion-item>
+                      <ion-icon slot="start" color="primary" size="medium" name="checkmark-outline"></ion-icon>
+                      <ion-input formControlName="passwordConfirm" type="password" [clearOnEdit]="false" placeholder="Confirmer Mot de Passe"></ion-input>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+                
+                <ion-row>
+                  <ion-col>
+                    <ion-button type="submit" expand="block">S'Inscrire</ion-button>
+                  </ion-col>
+                </ion-row>
+                
+              </ion-col>
+
+              <ion-col>
+                <ion-list class="error-list">
+
+                  <ion-item class="block">
+                    <ion-text [color]="registerForm.controls['password'].errors?.['PasswordNoUppercase'] ? 'danger' : 'success'" >Au moins une lettre majuscule.</ion-text>
+                  </ion-item>
+                  <ion-item class="block">
+                    <ion-text [color]="registerForm.controls['password'].errors?.['PasswordNoLowercase'] ? 'danger' : 'success'" >Au moins une lettre minuscule.</ion-text>
+                  </ion-item>
+                  <ion-item class="block">
+                    <ion-text [color]="registerForm.controls['password'].errors?.['PasswordNoDigit'] ? 'danger' : 'success'" >Au moins un chiffre.</ion-text>
+                  </ion-item>
+                  <ion-item class="block">
+                    <ion-text [color]="registerForm.controls['password'].errors?.['PasswordNoSpecial'] ? 'danger' : 'success'" >Au moins un caractère spécial.</ion-text>
+                  </ion-item>
+                  <ion-item class="block">
+                    <ion-text [color]="registerForm.controls['password'].errors?.['PasswordTooShort'] ? 'danger' : 'success'" >Une longueur d'au moins 8 caractères.</ion-text>
+                  </ion-item>
+                  <ion-item class="block">
+                    <ion-text [color]="registerForm.errors?.['PasswordNoMatch'] ? 'danger' : 'success'" >Les deux Mots de Passe doivent correspondrent.</ion-text>
+                  </ion-item>
+
+                </ion-list>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+
         </form>
       </div>
     

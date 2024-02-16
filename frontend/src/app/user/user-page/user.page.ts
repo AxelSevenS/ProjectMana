@@ -4,8 +4,9 @@ import { User, UserAuths } from '../user.model';
 import { UserService } from '../user.service';
 import { AuthenticationService } from 'src/app/authentication/authentication.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AuthenticationValidators } from 'src/app/authentication/authentication-utility';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
+import { AlertController } from '@ionic/angular';
 
 @Component({
   selector: 'app-user-page',
@@ -37,18 +38,32 @@ export class UserPage {
     private formBuilder: FormBuilder,
     private activatedRoute: ActivatedRoute,
     private userService: UserService,
-    private _authentication: AuthenticationService
+    private _authentication: AuthenticationService,
+    private alertController: AlertController,
   ) {}
   
   ngOnInit(): void {
     this.userService.getUserById(this.requestId)
       .subscribe(user => {
         if (user instanceof HttpErrorResponse) return;
+
         this._user = user;
         this._auths = this.userService.getAuths(this._user.roles);
 
         this.editUserForm.controls['username'].setValue(this._user.username);
         this.editUserForm.controls['roles'].setValue(this.userService.getRolesList(this._auths));
+      });
+
+    this.userService.eventRemoved
+      .subscribe(user => {
+        if (this._user?.id != user.id) return;
+        this._user = null;
+      });
+      
+    this.userService.eventUpdated
+      .subscribe(user => {
+        if (this._user?.id != user.id) return;
+        this._user = user;
       });
   }
 
@@ -62,10 +77,39 @@ export class UserPage {
     };
 
     this.userService.updateUserById(this.requestId, updated)
-      .subscribe(res => {
-        if (res && this.requestId == this.authentication.user?.id && this.user?.username != updated.username) {
+      .subscribe(async res => {
+        if (res instanceof HttpErrorResponse) {
+          const alert = await this.alertController.create({
+            header: 'Erreur lors de la Modification de l\'Utilisateur',
+            message: `La modification de l\'Utilisateur à échoué (erreur ${res.statusText})`,
+            buttons: ['Ok'],
+          });
+          
+          await alert.present();
+          return;
+        }
+
+        if (this.requestId == this.authentication.user?.id && this.user?.username != updated.username) {
           this.authentication.logout();
           this.router.navigate(['/authentication/login']);
+        }
+      });
+  }
+
+  async delete() {
+    if( ! this.user ) return;
+
+    this.userService.deleteUserById(this.user.id)
+      .subscribe(async res => {
+        if (res instanceof HttpErrorResponse) {
+          const alert = await this.alertController.create({
+            header: 'Erreur lors de la Suppression de l\'Utilisateur',
+            message: 'La suppression de l\'Utilisateur a échoué',
+            buttons: ['Ok'],
+          });
+          
+          await alert.present();
+          return;
         }
       });
   }

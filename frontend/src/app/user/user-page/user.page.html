@@ -1,61 +1,85 @@
-<ion-content *ngIf="user" [fullscreen]="true">
+<ng-template [ngIf]="user" [fullscreen]="true">
   <ion-header>
     <ion-toolbar>
       <ion-title>
-        <ng-template [ngIf]="this.authentication.user?.id == user.id" [ngIfElse]="notOwner">Votre Profil</ng-template>
+        <ng-template [ngIf]="authentication.user?.id == user.id" [ngIfElse]="notOwner">Votre Profil</ng-template>
         <ng-template #notOwner>Profile de {{ user.username }}</ng-template>
       </ion-title>
     </ion-toolbar>
   </ion-header>
   
-  <div *ngIf="this.user" class="content-container">
-    <form [formGroup]="editUserForm" class="form-col">
-      
-      <ng-template [ngIf]="this.authentication.user?.id == user.id || this.authentication.auths.UserEditor" [ngIfElse]="isNotOwner">
-        <ion-item lines="full">
-          <ion-input formControlName="username" type="text" label="Nom d'Utilisateur" labelPlacement="floating"></ion-input>
-        </ion-item>
-      </ng-template>
-      <ng-template #isNotOwner>
-        <ion-item lines="full">
-          <ion-label position="stacked">Nom d'Utilisateur</ion-label>
-          <ion-text>{{ this.user.username }}</ion-text>
-        </ion-item>
-      </ng-template>
-      
-      <ng-template [ngIf]="this.authentication.auths.AuthEditor">
-        <ion-item lines="full">
-          <ion-label position="stacked">Rôle</ion-label>
+  <ion-content>
+    <ion-grid *ngIf="user">
+      <ion-row>
+        <ion-col>
 
-          <ion-select formControlName="roles" placeholder="Autorisations" labelPlacement="stacked" [multiple]="true">
-            <ion-select-option value="UserEditor" [disabled]="!this.authentication.auths.UserEditor">Modifier n'importe quel Utilisateur</ion-select-option>
-            <ion-select-option value="AuthEditor" [disabled]="!this.authentication.auths.AuthEditor">Modifier des Autorisations</ion-select-option>
-            <ion-select-option value="UserDeleter" [disabled]="!this.authentication.auths.UserDeleter">Supprimer n'importe quel Utilisateur</ion-select-option>
-            <ion-select-option value="SongCreator" [disabled]="!this.authentication.auths.SongCreator">Ajouter des Chansons</ion-select-option>
-            <ion-select-option value="SongEditor" [disabled]="!this.authentication.auths.SongEditor">Modifier n'importe quelle Chanson</ion-select-option>
-            <ion-select-option value="SongDeleter" [disabled]="!this.authentication.auths.SongDeleter">Supprimer n'importe quelle Chanson</ion-select-option>
-            <ion-select-option value="PlaylistCreator" [disabled]="!this.authentication.auths.PlaylistCreator">Créer des Playlists</ion-select-option>
-            <ion-select-option value="PlaylistEditor" [disabled]="!this.authentication.auths.PlaylistEditor">Modifier n'importe quelle Playlist</ion-select-option>
-            <ion-select-option value="PlaylistDeleter" [disabled]="!this.authentication.auths.PlaylistDeleter">Supprimer n'importe quelle Playlist</ion-select-option>
-          </ion-select>
-        </ion-item>
-      </ng-template>
-      
-      
-      <ion-list>
-        <ion-col *ngIf="this.authentication.user?.id == user.id">
-          <ion-button [routerLink]="['/users/password']" type="submit" expand="block">
-            Modifier le Mot de Passe
-          </ion-button>
+          <form [formGroup]="editUserForm" class="form-col">
+            
+            <ng-template [ngIf]="authentication.user?.id == user.id || authentication.auths.UserEditor" [ngIfElse]="isNotOwner">
+              <ion-item lines="full">
+                <ion-input formControlName="username" type="text" label="Nom d'Utilisateur" labelPlacement="floating"></ion-input>
+              </ion-item>
+            </ng-template>
+            <ng-template #isNotOwner>
+              <ion-item lines="full">
+                <ion-label position="stacked">Nom d'Utilisateur</ion-label>
+                <ion-text>{{ user.username }}</ion-text>
+              </ion-item>
+            </ng-template>
+            
+            <ng-template [ngIf]="authentication.auths.AuthEditor">
+              <ion-item lines="full">
+                <ion-label position="stacked">Rôle</ion-label>
+
+                <ion-select formControlName="roles" placeholder="Autorisations" labelPlacement="stacked" [multiple]="true">
+                  <ion-select-option value="UserEditor" [disabled]="!authentication.auths.UserEditor">Modifier n'importe quel Utilisateur</ion-select-option>
+                  <ion-select-option value="AuthEditor" [disabled]="!authentication.auths.AuthEditor">Modifier des Autorisations</ion-select-option>
+                  <ion-select-option value="UserDeleter" [disabled]="!authentication.auths.UserDeleter">Supprimer n'importe quel Utilisateur</ion-select-option>
+                  <ion-select-option value="SongCreator" [disabled]="!authentication.auths.SongCreator">Ajouter des Chansons</ion-select-option>
+                  <ion-select-option value="SongEditor" [disabled]="!authentication.auths.SongEditor">Modifier n'importe quelle Chanson</ion-select-option>
+                  <ion-select-option value="SongDeleter" [disabled]="!authentication.auths.SongDeleter">Supprimer n'importe quelle Chanson</ion-select-option>
+                  <ion-select-option value="PlaylistCreator" [disabled]="!authentication.auths.PlaylistCreator">Créer des Playlists</ion-select-option>
+                  <ion-select-option value="PlaylistEditor" [disabled]="!authentication.auths.PlaylistEditor">Modifier n'importe quelle Playlist</ion-select-option>
+                  <ion-select-option value="PlaylistDeleter" [disabled]="!authentication.auths.PlaylistDeleter">Supprimer n'importe quelle Playlist</ion-select-option>
+                </ion-select>
+              </ion-item>
+            </ng-template>
+            
+            
+            <ion-grid>
+              
+              <ion-row *ngIf="authentication.user?.id == user.id">
+                <ion-col>
+                  <ion-button [routerLink]="['/users/password']" expand="block">
+                    Modifier le Mot de Passe
+                  </ion-button>
+                </ion-col>
+              </ion-row>
+                
+              <ion-row *ngIf="authentication.user?.id == user.id || authentication.auths.UserEditor">
+                <ion-col>
+                  <ion-button (click)="onSubmit()" expand="block">
+                    Sauvegarder
+                  </ion-button>
+                </ion-col>
+              </ion-row>
+
+              <ion-row *ngIf="authentication.user?.id == user.id || authentication.auths.UserEditor">
+                <ion-col>
+                  <ion-button *ngIf="this.authentication.user?.id == user.id || this.authentication.auths.UserDeleter" (click)="delete()" color="danger" expand="block">
+                    <ion-icon slot="start" name="trash-outline"></ion-icon>
+                    Supprimer
+                  </ion-button>
+                </ion-col>
+              </ion-row>
+
+            </ion-grid>
+            
+          </form>
+
         </ion-col>
-        <ion-col *ngIf="this.authentication.user?.id == user.id || this.authentication.auths.UserEditor">
-          <ion-button (click)="onSubmit()" type="submit" expand="block">
-            Sauvegarder
-          </ion-button>
-        </ion-col>
-      </ion-list>
-      
-    </form>
-  </div>
+      </ion-row>
+    </ion-grid>
+  </ion-content>
   
-</ion-content>
+</ng-template>

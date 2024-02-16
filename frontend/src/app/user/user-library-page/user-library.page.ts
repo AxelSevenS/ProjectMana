@@ -6,6 +6,8 @@ import { Song } from 'src/app/song/song.model';
 import { SongService } from 'src/app/song/song.service';
 import { UserService } from '../user.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { first } from 'rxjs';
+import { UserSongsProvider } from 'src/app/song/user-songs.provider';
 
 @Component({
   selector: 'app-user-library',
@@ -20,8 +22,7 @@ export class UserLibraryPage implements OnInit {
   public get user() { return this._user }
   private _user?: User | null;
 
-  public get songs() { return this._songs }
-  private _songs?: Song[] | null;
+  public get songs() { return this.userSongsProvider._songs }
 
 
 
@@ -29,6 +30,7 @@ export class UserLibraryPage implements OnInit {
     private activatedRoute: ActivatedRoute,
     private userService: UserService,
     private songService: SongService,
+    private userSongsProvider: UserSongsProvider,
     private _authentication: AuthenticationService
   ) {}
   
@@ -40,13 +42,6 @@ export class UserLibraryPage implements OnInit {
 
         this._user = user;
       })
-    this.songService.getSongsByAuthorId(this.requestId)
-      .subscribe(songs => {
-        this._songs = null;
-        if (songs instanceof HttpErrorResponse) return;
-
-        this._songs = songs;
-      });
   }
 
   onInfiniteScroll(event: Event) {

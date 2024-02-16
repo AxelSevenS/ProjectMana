@@ -14,7 +14,6 @@ import { SearchPage } from './search.page';
     ReactiveFormsModule,
     IonicModule.forRoot()
   ],
-  providers: [],
   declarations: [SearchPage],
   exports: [SearchPage]
 })

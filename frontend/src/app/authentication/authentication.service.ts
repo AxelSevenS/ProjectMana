@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, catchError, map, of, share } from 'rxjs';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { JwtPayload, jwtDecode } from 'jwt-decode';
@@ -27,7 +27,6 @@ export class AuthenticationService {
 
   constructor(
     private userService: UserService,
-    private http: HttpClient,
     private router: Router
   ) {
     this._state = 'loggedOut';
@@ -44,19 +43,40 @@ export class AuthenticationService {
     this._user = user;
     this._auths = this.userService.getAuths(this._user.roles);
     this._state = 'loggedIn';
+
+    this.userService.eventRemoved
+      .subscribe(res => {
+        if (res.id != this._user?.id) return;
+
+        this.logout();
+      });
+
+    this.userService.eventUpdated
+      .subscribe(res => {
+        if (res.id != this._user?.id) return;
+
+        this.logout();
+
+        this.router.navigate(['/authentication'])
+          .then(() => {
+            window.location.reload();
+          });
+      });
   }
 
 
   login(username: string, password: string): Observable<User | HttpErrorResponse> {
-    const formData = new FormData();
-    formData.append('username', username);
-    formData.append('password', password);
 
-    const headers = new HttpHeaders({ 'enctype': 'multipart/form-data' });
-
-    return this.http.post<string>(`${environment.host}/api/users/auth/`, formData, {headers: headers})
-      .pipe( 
+    return this.userService.authenticateUserByUsernameAndPassword(username, password)
+      .pipe(
         map(res => {
+          if (res instanceof HttpErrorResponse) {
+            this._user = null;
+            this._state = res.error == 0 ? 'disconnected' : 'loggedOut';
+            this._auths = this.userService.getAuths(undefined);
+            return res;
+          }
+
           this._user = this.jwtToUser(res);
           if (this._user === null) throw new HttpErrorResponse({ error: 400 });
           
@@ -64,34 +84,23 @@ export class AuthenticationService {
           this._state = 'loggedIn';
           this._auths = this.userService.getAuths(this._user.roles);
           return this._user;
-        }), 
-        catchError((err: HttpErrorResponse) => {
-          this._user = null;
-          this._state = err.error == 0 ? 'disconnected' : 'loggedOut';
-          this._auths = this.userService.getAuths(undefined);
-          return of(err);
         })
       );
   }
 
   register(username: string, password: string): Observable<User | HttpErrorResponse> {
-    const formData = new FormData();
-    formData.append('username', username);
-    formData.append('password', password);
-
-    const headers = new HttpHeaders({ 'enctype': 'multipart/form-data' });
-
-    return this.http.put<User>(`${environment.host}/api/users/`, formData, {headers: headers})
-      .pipe(
-        catchError(err => of(err) )
-      );
+    return this.userService.createUser(username, password);
   }
 
   logout(): void {
     this._user = null;
     this._state = 'loggedOut';
     localStorage.removeItem(AuthenticationService.storageKey);
-    this.router.navigate(['']);
+    
+    this.router.navigate([''])
+      .then(() => {
+        window.location.reload();
+      });
   }
 
   private jwtToUser(token: string): User | null {
